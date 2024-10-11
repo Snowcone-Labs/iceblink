@@ -1,0 +1,11 @@
+# General
+.env
+
+# Rust
+target
+debug
+**/*.rs.bk
+*.pdb
+
+# App
+node_modules
