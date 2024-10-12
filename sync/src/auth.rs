@@ -120,7 +120,7 @@ pub struct OpenIdDiscovery {
     pub userinfo_endpoint: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct OpenIdUserInfo {
     #[serde(rename = "sub")]
     pub id: String,

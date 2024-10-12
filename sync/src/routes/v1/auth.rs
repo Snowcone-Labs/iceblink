@@ -1,7 +1,8 @@
 use crate::{
     auth,
-    models::{self},
+    models::{self, user::User},
     server::AppState,
+    utils,
 };
 use axum::{
     extract::{Query, State},
@@ -32,7 +33,7 @@ pub async fn oauth(
             println!("Received user data! {:?}", user_data);
 
             let attemped_user_fetch =
-                models::user::User::get_by_upstream_id(&state.db, user_data.id).await;
+                models::user::User::get_by_upstream_id(&state.db, user_data.clone().id).await;
 
             if let Ok(user_fetch) = attemped_user_fetch {
                 if let Some(user) = user_fetch {
@@ -45,7 +46,25 @@ pub async fn oauth(
 
                     (StatusCode::OK, headers)
                 } else {
-                    todo!("create user");
+                    let user = User {
+                        avatar_url: user_data.clone().avatar,
+                        display_name: user_data
+                            .clone()
+                            .display_name
+                            .unwrap_or(user_data.clone().username),
+                        id: utils::generate_id(16),
+                        upstream_userid: user_data.clone().id,
+                        username: user_data.clone().username,
+                    };
+                    user.insert(&state.db).await.unwrap();
+                    let jwt = auth::create_jwt(&user, state.settings.jwt_secret.clone()).await;
+
+                    headers.insert(
+                        header::SET_COOKIE,
+                        format!("iceblink_jwt={jwt}").parse().unwrap(),
+                    );
+
+                    (StatusCode::OK, headers)
                 }
             } else {
                 warn!("Database error catched");
