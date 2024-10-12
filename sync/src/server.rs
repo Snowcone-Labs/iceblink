@@ -1,4 +1,5 @@
 use axum::http::Method;
+use axum::middleware;
 use axum::routing::{delete, get, put};
 use memory_serve::{load_assets, MemoryServe};
 use sqlx::sqlite::SqliteConnectOptions;
@@ -11,14 +12,19 @@ use tower_http::cors::CorsLayer;
 use tower_http::timeout::TimeoutLayer;
 use tracing::info;
 
-use crate::routes;
+use crate::{auth, routes};
 
+#[derive(Clone)]
 pub struct ServerOptions {
     pub port: u32,
+    pub client_id: String,
+    pub client_secret: String,
+    pub jwt_secret: String,
 }
 
 pub struct AppState {
     pub db: SqlitePool,
+    pub settings: ServerOptions,
 }
 
 pub async fn create_server(opts: ServerOptions) {
@@ -35,14 +41,23 @@ pub async fn create_server(opts: ServerOptions) {
         .await
         .expect("Unable to run database migrations");
 
+    let state = Arc::new(AppState {
+        db: pool,
+        settings: opts.clone(),
+    });
+
     // Note: Read bottom to top
     let app = axum::Router::new()
         .route("/v1/codes", get(routes::v1::codes::list_all))
         .route("/v1/codes", put(routes::v1::codes::add))
         .route("/v1/code/:uuid", delete(routes::v1::codes::delete))
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            auth::middleware,
+        ))
         .route("/v1/", get(routes::v1::index::index))
         .route("/v1/oauth", get(routes::v1::auth::oauth))
-        .with_state(Arc::new(AppState { db: pool }))
+        .with_state(state)
         .nest_service(
             "/",
             MemoryServe::new(load_assets!("static"))

@@ -1,3 +1,4 @@
+pub mod auth;
 pub mod cli;
 pub mod models;
 pub mod routes;
@@ -18,11 +19,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .init();
 
     match &settings.command {
-        Commands::Serve { port } => {
+        Commands::Serve {
+            port,
+            client_id,
+            client_secret,
+            jwt_secret,
+        } => {
             info!("Iceblink Sync Server");
 
             server::create_server(ServerOptions {
                 port: port.unwrap_or(8085),
+                client_id: client_id.to_string(),
+                client_secret: client_secret.to_string(),
+                jwt_secret: jwt_secret.to_string(),
             })
             .await;
         }

@@ -40,6 +40,18 @@ pub enum Commands {
         /// Optional port to use. Default is 8085
         #[arg(short, long, env = "ICEBLINK_PORT")]
         port: Option<u32>,
+
+        /// JWT secret signing key
+        #[arg(long, env = "ICEBLINK_JWT_SECRET")]
+        jwt_secret: String,
+
+        /// OAuth Client id
+        #[arg(long, env = "ICEBLINK_OAUTH_CLIENT_ID")]
+        client_id: String,
+
+        /// OAuth Client secret
+        #[arg(long, env = "ICEBLINK_OAUTH_CLIENT_SECRET")]
+        client_secret: String,
     },
 }
 
