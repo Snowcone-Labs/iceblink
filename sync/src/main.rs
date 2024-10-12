@@ -7,6 +7,7 @@ use tracing::info;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    dotenvy::dotenv()?;
     let settings = cli::get_settings();
 
     tracing_subscriber::fmt()
@@ -16,6 +17,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     match &settings.command {
         Commands::Serve { port } => {
             info!("Iceblink Sync Server");
+
             server::create_server(ServerOptions {
                 port: port.unwrap_or(8085),
             })

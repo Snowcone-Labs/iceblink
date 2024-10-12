@@ -843,6 +843,7 @@ dependencies = [
  "axum",
  "chrono",
  "clap",
+ "dotenvy",
  "memory-serve",
  "serde",
  "sqlx",
