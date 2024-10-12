@@ -1,6 +1,9 @@
 use axum::http::Method;
-use axum::routing::get;
+use axum::routing::{delete, get, put};
 use memory_serve::{load_assets, MemoryServe};
+use sqlx::sqlite::SqliteConnectOptions;
+use sqlx::SqlitePool;
+use std::sync::Arc;
 use std::time::Duration;
 use tokio::signal;
 use tower::ServiceBuilder;
@@ -14,8 +17,31 @@ pub struct ServerOptions {
     pub port: u32,
 }
 
+pub struct AppState {
+    pub db: SqlitePool,
+}
+
 pub async fn create_server(opts: ServerOptions) {
+    let pool = SqlitePool::connect_with(
+        SqliteConnectOptions::new()
+            .filename("iceblink.db")
+            .create_if_missing(true),
+    )
+    .await
+    .expect("Unable to connect with SQLite");
+
+    sqlx::migrate!()
+        .run(&pool)
+        .await
+        .expect("Unable to run database migrations");
+
     let app = axum::Router::new()
+        .route("/v1/", get(routes::v1::index::index))
+        .route("/v1/oauth", get(routes::v1::auth::oauth))
+        .route("/v1/codes", get(routes::v1::codes::list_all))
+        .route("/v1/codes", put(routes::v1::codes::add))
+        .route("/v1/code/:uuid", delete(routes::v1::codes::delete))
+        .with_state(Arc::new(AppState { db: pool }))
         .nest_service(
             "/",
             MemoryServe::new(load_assets!("static"))
@@ -33,8 +59,7 @@ pub async fn create_server(opts: ServerOptions) {
                     .allow_origin(tower_http::cors::Any),
             ),
         )
-        .layer(TimeoutLayer::new(Duration::from_secs(2)))
-        .route("/v1/", get(routes::v1::index::index));
+        .layer(TimeoutLayer::new(Duration::from_secs(2)));
 
     info!("Starting HTTP server");
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", opts.port))

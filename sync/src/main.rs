@@ -1,13 +1,16 @@
 pub mod cli;
+pub mod models;
 pub mod routes;
 pub mod server;
+pub mod utils;
+
 use cli::Commands;
 use server::ServerOptions;
 use tracing::info;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    dotenvy::dotenv()?;
+    let _ = dotenvy::dotenv();
     let settings = cli::get_settings();
 
     tracing_subscriber::fmt()

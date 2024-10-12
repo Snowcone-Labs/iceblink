@@ -845,6 +845,7 @@ dependencies = [
  "clap",
  "dotenvy",
  "memory-serve",
+ "rand",
  "serde",
  "sqlx",
  "tokio",
