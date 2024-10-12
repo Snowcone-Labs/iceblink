@@ -1,4 +1,7 @@
-use crate::{models, server::AppState};
+use crate::{
+    models::{self, user::User},
+    server::AppState,
+};
 use axum::{
     extract::{Request, State},
     http::{header, StatusCode},
@@ -7,7 +10,7 @@ use axum::{
     Json,
 };
 use axum_extra::extract::cookie::CookieJar;
-use jsonwebtoken::{decode, DecodingKey, Validation};
+use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -16,10 +19,33 @@ pub struct TokenClaims {
     pub exp: usize,
     pub iat: usize,
     pub sub: String,
+    pub username: String,
+    pub display_name: String,
+    pub avatar_url: String,
+}
+
+pub async fn create_jwt(user: &User, secret: String) -> String {
+    let now = chrono::Utc::now();
+
+    let claims = TokenClaims {
+        iat: now.timestamp() as usize,
+        exp: (now + chrono::Duration::days(90)).timestamp() as usize,
+        sub: user.id.clone(),
+        username: user.username.clone(),
+        display_name: user.display_name.clone(),
+        avatar_url: user.avatar_url.clone(),
+    };
+
+    encode(
+        &Header::default(),
+        &claims,
+        &EncodingKey::from_secret(secret.as_ref()),
+    )
+    .unwrap()
 }
 
 #[derive(Debug, Serialize)]
-pub struct ErrorResponse {
+pub struct JwtMiddlewareError {
     pub message: String,
 }
 
@@ -28,7 +54,7 @@ pub async fn jwt_middleware(
     State(data): State<Arc<AppState>>,
     mut req: Request,
     next: Next,
-) -> Result<impl IntoResponse, (StatusCode, Json<ErrorResponse>)> {
+) -> Result<impl IntoResponse, (StatusCode, Json<JwtMiddlewareError>)> {
     let token = cookie_jar
         .get("token")
         .map(|cookie| cookie.value().to_string())
@@ -48,7 +74,7 @@ pub async fn jwt_middleware(
     let token = token.ok_or_else(|| {
         (
             StatusCode::UNAUTHORIZED,
-            Json(ErrorResponse {
+            Json(JwtMiddlewareError {
                 message: "You are not logged in, please provide token".to_string(),
             }),
         )
@@ -60,7 +86,7 @@ pub async fn jwt_middleware(
         &Validation::default(),
     )
     .map_err(|_| {
-        let json_error = ErrorResponse {
+        let json_error = JwtMiddlewareError {
             message: "Invalid token".to_string(),
         };
         (StatusCode::UNAUTHORIZED, Json(json_error))
@@ -72,7 +98,7 @@ pub async fn jwt_middleware(
         .map_err(|e| {
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(ErrorResponse {
+                Json(JwtMiddlewareError {
                     message: format!("Error fetching user from database: {}", e),
                 }),
             )
@@ -81,7 +107,7 @@ pub async fn jwt_middleware(
     let user = user.ok_or_else(|| {
         (
             StatusCode::UNAUTHORIZED,
-            Json(ErrorResponse {
+            Json(JwtMiddlewareError {
                 message: "The user belonging to this token no longer exists".to_string(),
             }),
         )
