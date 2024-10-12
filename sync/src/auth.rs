@@ -116,3 +116,21 @@ pub async fn jwt_middleware(
     req.extensions_mut().insert(user);
     Ok(next.run(req).await)
 }
+
+#[derive(Deserialize, Clone)]
+pub struct OpenId {
+    pub authorization_endpoint: String,
+    pub token_endpoint: String,
+    pub userinfo_endpoint: String,
+}
+
+impl OpenId {
+    pub async fn get(base: String) -> Result<OpenId, Box<dyn std::error::Error>> {
+        let response = reqwest::get(format!("{base}/.well-known/openid-configuration"))
+            .await?
+            .json::<OpenId>()
+            .await?;
+
+        Ok(response)
+    }
+}

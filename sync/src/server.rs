@@ -15,12 +15,17 @@ use tower_http::trace::TraceLayer;
 use tracing::{info, Span};
 
 #[derive(Clone)]
-pub struct ServerOptions {
-    pub port: u32,
+pub struct OAuthOptions {
     pub client_id: String,
     pub client_secret: String,
-    pub oauth_server: String,
+    pub config: auth::OpenId,
+}
+
+#[derive(Clone)]
+pub struct ServerOptions {
+    pub port: u32,
     pub jwt_secret: String,
+    pub oauth: OAuthOptions,
 }
 
 pub struct AppState {
