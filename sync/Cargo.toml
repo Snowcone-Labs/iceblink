@@ -22,3 +22,4 @@ rand = "0.8.5"
 reqwest = "0.12.8"
 jsonwebtoken = "9.3.0"
 axum-extra = {version="0.9.4", features = ["cookie"]}
+regex = "1.11.0"
