@@ -46,11 +46,11 @@ pub async fn oauth(
                 }
             } else {
                 warn!("Database error catched");
-                return (StatusCode::INTERNAL_SERVER_ERROR, headers);
+                (StatusCode::INTERNAL_SERVER_ERROR, headers)
             }
         } else {
             println!("Failed to get user data: {:?}", user_info.unwrap());
-            return (StatusCode::UNAUTHORIZED, headers);
+            (StatusCode::UNAUTHORIZED, headers)
         }
     } else {
         println!("Failed to exchange: {:?}", exchange.unwrap());

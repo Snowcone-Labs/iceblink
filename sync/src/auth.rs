@@ -14,8 +14,6 @@ use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation}
 use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use tokio::io::unix::TryIoError;
-use tracing::info;
 
 #[derive(Serialize, Deserialize)]
 pub struct TokenClaims {
@@ -166,13 +164,13 @@ impl OpenId {
             .json::<OpenIdDiscovery>()
             .await?;
 
-        return Ok(OpenId {
+        Ok(OpenId {
             client_id,
             client_secret,
             authorization: config.authorization_endpoint,
             token: config.token_endpoint,
             userinfo: config.userinfo_endpoint,
-        });
+        })
     }
 
     pub async fn exchange(
@@ -208,7 +206,6 @@ impl OpenId {
             .bearer_auth(token);
 
         let response = request.send().await?;
-        // info!("{:?}", response.text().await);
 
         Ok(response.json::<OpenIdUserInfo>().await?)
     }
