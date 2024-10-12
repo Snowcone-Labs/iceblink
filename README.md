@@ -11,3 +11,6 @@ options can be passed in the following ways:
 - Flags
 - Environment variables
 - .env
+
+The database manages itself, and you do not have to run migrations, nor create
+the file.
