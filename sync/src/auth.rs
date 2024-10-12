@@ -62,13 +62,8 @@ pub async fn jwt_middleware(
             req.headers()
                 .get(header::AUTHORIZATION)
                 .and_then(|auth_header| auth_header.to_str().ok())
-                .and_then(|auth_value| {
-                    if auth_value.starts_with("Bearer ") {
-                        Some(auth_value[7..].to_owned())
-                    } else {
-                        None
-                    }
-                })
+                .and_then(|auth_value| auth_value.strip_prefix("Bearer "))
+                .map(|auth_value_inner| auth_value_inner.to_string())
         });
 
     let token = token.ok_or_else(|| {
