@@ -23,7 +23,7 @@ pub struct ErrorResponse {
     pub message: String,
 }
 
-pub async fn middleware(
+pub async fn jwt_middleware(
     cookie_jar: CookieJar,
     State(data): State<Arc<AppState>>,
     mut req: Request,

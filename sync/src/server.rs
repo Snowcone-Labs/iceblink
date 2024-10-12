@@ -1,3 +1,4 @@
+use crate::{auth, routes};
 use axum::http::{Method, Request};
 use axum::middleware;
 use axum::routing::{delete, get, put};
@@ -13,13 +14,12 @@ use tower_http::timeout::TimeoutLayer;
 use tower_http::trace::TraceLayer;
 use tracing::{info, Span};
 
-use crate::{auth, routes};
-
 #[derive(Clone)]
 pub struct ServerOptions {
     pub port: u32,
     pub client_id: String,
     pub client_secret: String,
+    pub oauth_server: String,
     pub jwt_secret: String,
 }
 
@@ -54,7 +54,7 @@ pub async fn create_server(opts: ServerOptions) {
         .route("/v1/code/:uuid", delete(routes::v1::codes::delete))
         .layer(middleware::from_fn_with_state(
             state.clone(),
-            auth::middleware,
+            auth::jwt_middleware,
         ))
         .route("/v1/", get(routes::v1::index::index))
         .route("/v1/oauth", get(routes::v1::auth::oauth))

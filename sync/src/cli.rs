@@ -45,13 +45,19 @@ pub enum Commands {
         #[arg(long, env = "ICEBLINK_JWT_SECRET")]
         jwt_secret: String,
 
-        /// OAuth Client id
+        /// OAuth client id
         #[arg(long, env = "ICEBLINK_OAUTH_CLIENT_ID")]
         client_id: String,
 
-        /// OAuth Client secret
+        /// OAuth client secret
         #[arg(long, env = "ICEBLINK_OAUTH_CLIENT_SECRET")]
         client_secret: String,
+
+        /// OAuth server with OIDC located at /.well-known/openid-configuration
+        /// Do not include a trailing slash
+        /// Defaults to https://pfapi.snowflake.blue
+        #[arg(long, env = "ICEBLINK_OAUTH_SERVER")]
+        oauth_server: Option<String>,
     },
 }
 

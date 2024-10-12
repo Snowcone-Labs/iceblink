@@ -23,6 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             port,
             client_id,
             client_secret,
+            oauth_server,
             jwt_secret,
         } => {
             info!("Iceblink Sync Server");
@@ -31,6 +32,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 port: port.unwrap_or(8085),
                 client_id: client_id.to_string(),
                 client_secret: client_secret.to_string(),
+                oauth_server: oauth_server
+                    .clone()
+                    .unwrap_or("https://pfapi.snowflake.blue".to_string()),
                 jwt_secret: jwt_secret.to_string(),
             })
             .await;
