@@ -6,7 +6,7 @@ use sqlx::SqlitePool;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::signal;
-use tower::ServiceBuilder;
+use tower_http::compression::CompressionLayer;
 use tower_http::cors::CorsLayer;
 use tower_http::timeout::TimeoutLayer;
 use tracing::info;
@@ -35,12 +35,13 @@ pub async fn create_server(opts: ServerOptions) {
         .await
         .expect("Unable to run database migrations");
 
+    // Note: Read bottom to top
     let app = axum::Router::new()
-        .route("/v1/", get(routes::v1::index::index))
-        .route("/v1/oauth", get(routes::v1::auth::oauth))
         .route("/v1/codes", get(routes::v1::codes::list_all))
         .route("/v1/codes", put(routes::v1::codes::add))
         .route("/v1/code/:uuid", delete(routes::v1::codes::delete))
+        .route("/v1/", get(routes::v1::index::index))
+        .route("/v1/oauth", get(routes::v1::auth::oauth))
         .with_state(Arc::new(AppState { db: pool }))
         .nest_service(
             "/",
@@ -53,12 +54,11 @@ pub async fn create_server(opts: ServerOptions) {
                 .into_router(),
         )
         .layer(
-            ServiceBuilder::new().layer(
-                CorsLayer::new()
-                    .allow_methods([Method::GET])
-                    .allow_origin(tower_http::cors::Any),
-            ),
+            CorsLayer::new()
+                .allow_methods([Method::GET])
+                .allow_origin(tower_http::cors::Any),
         )
+        .layer(CompressionLayer::new())
         .layer(TimeoutLayer::new(Duration::from_secs(2)));
 
     info!("Starting HTTP server");
