@@ -38,7 +38,10 @@ pub async fn oauth(
                 if let Some(user) = user_fetch {
                     let jwt = auth::create_jwt(&user, state.settings.jwt_secret.clone()).await;
 
-                    headers.insert(header::SET_COOKIE, format!("jwt={jwt}").parse().unwrap());
+                    headers.insert(
+                        header::SET_COOKIE,
+                        format!("iceblink_jwt={jwt}").parse().unwrap(),
+                    );
 
                     (StatusCode::OK, headers)
                 } else {

@@ -57,7 +57,7 @@ pub async fn jwt_middleware(
     next: Next,
 ) -> Result<impl IntoResponse, (StatusCode, Json<JwtMiddlewareError>)> {
     let token = cookie_jar
-        .get("token")
+        .get("iceblink_jwt")
         .map(|cookie| cookie.value().to_string())
         .or_else(|| {
             req.headers()
