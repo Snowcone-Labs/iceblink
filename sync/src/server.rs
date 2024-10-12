@@ -1,4 +1,4 @@
-use axum::http::Method;
+use axum::http::{Method, Request};
 use axum::middleware;
 use axum::routing::{delete, get, put};
 use memory_serve::{load_assets, MemoryServe};
@@ -10,7 +10,8 @@ use tokio::signal;
 use tower_http::compression::CompressionLayer;
 use tower_http::cors::CorsLayer;
 use tower_http::timeout::TimeoutLayer;
-use tracing::info;
+use tower_http::trace::TraceLayer;
+use tracing::{info, Span};
 
 use crate::{auth, routes};
 
@@ -74,6 +75,11 @@ pub async fn create_server(opts: ServerOptions) {
                 .allow_origin(tower_http::cors::Any),
         )
         .layer(CompressionLayer::new())
+        .layer(
+            TraceLayer::new_for_http().on_request(|request: &Request<_>, _span: &Span| {
+                info!("{} {}", request.method(), request.uri().path())
+            }),
+        )
         .layer(TimeoutLayer::new(Duration::from_secs(2)));
 
     info!("Starting HTTP server");
