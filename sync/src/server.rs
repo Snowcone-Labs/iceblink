@@ -1,4 +1,5 @@
 use axum::http::Method;
+use axum::routing::get;
 use memory_serve::{load_assets, MemoryServe};
 use std::time::Duration;
 use tokio::signal;
@@ -7,11 +8,13 @@ use tower_http::cors::CorsLayer;
 use tower_http::timeout::TimeoutLayer;
 use tracing::info;
 
-pub(crate) struct ServerOptions {
-    pub(crate) port: u32,
+use crate::routes;
+
+pub struct ServerOptions {
+    pub port: u32,
 }
 
-pub(crate) async fn create_server(opts: ServerOptions) {
+pub async fn create_server(opts: ServerOptions) {
     let app = axum::Router::new()
         .nest_service(
             "/",
@@ -30,7 +33,8 @@ pub(crate) async fn create_server(opts: ServerOptions) {
                     .allow_origin(tower_http::cors::Any),
             ),
         )
-        .layer(TimeoutLayer::new(Duration::from_secs(2)));
+        .layer(TimeoutLayer::new(Duration::from_secs(2)))
+        .route("/v1/", get(routes::v1::index::index));
 
     info!("Starting HTTP server");
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", opts.port))
