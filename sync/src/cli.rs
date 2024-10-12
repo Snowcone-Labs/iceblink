@@ -53,6 +53,11 @@ pub enum Commands {
         #[arg(long, env = "ICEBLINK_OAUTH_CLIENT_SECRET")]
         client_secret: String,
 
+        /// Redirect URI for OAuth
+        /// Example: https://iceblink.snowflake.blue/v1/oauth
+        #[arg(long, env = "ICEBLINK_OAUTH_REDIRECT_URI")]
+        redirect_uri: String,
+
         /// OAuth server with OIDC located at /.well-known/openid-configuration
         /// Do not include a trailing slash
         /// Defaults to https://pfapi.snowflake.blue

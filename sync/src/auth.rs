@@ -11,8 +11,11 @@ use axum::{
 };
 use axum_extra::extract::cookie::CookieJar;
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
+use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
+use tokio::io::unix::TryIoError;
+use tracing::info;
 
 #[derive(Serialize, Deserialize)]
 pub struct TokenClaims {
@@ -70,7 +73,7 @@ pub async fn jwt_middleware(
         (
             StatusCode::UNAUTHORIZED,
             Json(JwtMiddlewareError {
-                message: "You are not logged in, please provide token".to_string(),
+                message: "No JWT found".to_string(),
             }),
         )
     })?;
@@ -113,19 +116,100 @@ pub async fn jwt_middleware(
 }
 
 #[derive(Deserialize, Clone)]
-pub struct OpenId {
+pub struct OpenIdDiscovery {
     pub authorization_endpoint: String,
     pub token_endpoint: String,
     pub userinfo_endpoint: String,
 }
 
+#[derive(Deserialize, Debug)]
+pub struct OpenIdUserInfo {
+    #[serde(rename = "sub")]
+    pub id: String,
+    #[serde(rename = "name")]
+    pub display_name: Option<String>,
+    #[serde(rename = "preferred_username")]
+    pub username: String,
+    #[serde(rename = "picture")]
+    pub avatar: String,
+}
+
+#[derive(Deserialize, Debug)]
+struct TokenExchangeResponse {
+    access_token: String,
+}
+
+#[derive(Clone)]
+pub struct OpenId {
+    pub authorization: String,
+    pub token: String,
+    pub userinfo: String,
+    pub client_id: String,
+    pub client_secret: String,
+}
+
+#[derive(Serialize, Debug)]
+struct TokenExchangeRequest {
+    client_id: String,
+    client_secret: String,
+    code: String,
+}
+
 impl OpenId {
-    pub async fn get(base: String) -> Result<OpenId, Box<dyn std::error::Error>> {
-        let response = reqwest::get(format!("{base}/.well-known/openid-configuration"))
+    pub async fn new(
+        client_id: String,
+        client_secret: String,
+        server: String,
+    ) -> Result<Self, Box<dyn std::error::Error>> {
+        let config = reqwest::get(format!("{server}/.well-known/openid-configuration"))
             .await?
-            .json::<OpenId>()
+            .json::<OpenIdDiscovery>()
             .await?;
 
-        Ok(response)
+        return Ok(OpenId {
+            client_id,
+            client_secret,
+            authorization: config.authorization_endpoint,
+            token: config.token_endpoint,
+            userinfo: config.userinfo_endpoint,
+        });
+    }
+
+    pub async fn exchange(
+        self,
+        code: String,
+    ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+        let request = reqwest::Client::new()
+            .post(self.token)
+            .header(USER_AGENT, "Iceblink")
+            .json(&TokenExchangeRequest {
+                client_id: self.client_id,
+                client_secret: self.client_secret,
+                code,
+            });
+
+        let response = request
+            .send()
+            .await?
+            .json::<TokenExchangeResponse>()
+            .await?;
+        // info!("Response to exchange: {:?}", response);
+
+        Ok(response.access_token)
+    }
+
+    pub async fn userinfo(
+        self,
+        token: String,
+    ) -> Result<OpenIdUserInfo, Box<dyn std::error::Error + Send + Sync>> {
+        let request = reqwest::Client::new()
+            .get(self.userinfo)
+            .header(USER_AGENT, "Iceblink")
+            .bearer_auth(token);
+
+        let response = request.send().await?;
+        // info!("{:?}", response.text().await);
+
+        Ok(response.json::<OpenIdUserInfo>().await?)
     }
 }

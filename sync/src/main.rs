@@ -7,10 +7,11 @@ pub mod utils;
 
 use cli::Commands;
 use server::ServerOptions;
+use std::error::Error;
 use tracing::info;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> Result<(), Box<dyn Error>> {
     let _ = dotenvy::dotenv();
     let settings = cli::get_settings();
 
@@ -25,22 +26,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             client_secret,
             oauth_server,
             jwt_secret,
+            redirect_uri,
         } => {
             info!("Iceblink Sync Server");
 
             server::create_server(ServerOptions {
                 port: port.unwrap_or(8085),
-                oauth: server::OAuthOptions {
-                    client_id: client_id.to_string(),
-                    client_secret: client_secret.to_string(),
-                    config: auth::OpenId::get(
-                        oauth_server
-                            .clone()
-                            .unwrap_or("https://pfapi.snowflake.blue".to_string()),
-                    )
-                    .await
-                    .expect("Unable to gather OpenID Connect Discovery configuration"),
-                },
+                client_id: client_id.to_string(),
+                client_secret: client_secret.to_string(),
+                oauth_server: oauth_server
+                    .clone()
+                    .unwrap_or("https://pfapi.snowflake.blue".to_string()),
+                redirect_uri: redirect_uri.to_string(),
                 jwt_secret: jwt_secret.to_string(),
             })
             .await;

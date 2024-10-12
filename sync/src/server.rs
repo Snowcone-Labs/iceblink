@@ -15,22 +15,20 @@ use tower_http::trace::TraceLayer;
 use tracing::{info, Span};
 
 #[derive(Clone)]
-pub struct OAuthOptions {
-    pub client_id: String,
-    pub client_secret: String,
-    pub config: auth::OpenId,
-}
-
-#[derive(Clone)]
 pub struct ServerOptions {
     pub port: u32,
     pub jwt_secret: String,
-    pub oauth: OAuthOptions,
+    pub client_id: String,
+    pub client_secret: String,
+    pub oauth_server: String,
+    pub redirect_uri: String,
 }
 
+#[derive(Clone)]
 pub struct AppState {
     pub db: SqlitePool,
     pub settings: ServerOptions,
+    pub openid: auth::OpenId,
 }
 
 pub async fn create_server(opts: ServerOptions) {
@@ -47,9 +45,18 @@ pub async fn create_server(opts: ServerOptions) {
         .await
         .expect("Unable to run database migrations");
 
+    let openid = auth::OpenId::new(
+        opts.clone().client_id,
+        opts.clone().client_secret,
+        opts.clone().oauth_server,
+    )
+    .await
+    .expect("Unable to setup OpenId authentication");
+
     let state = Arc::new(AppState {
         db: pool,
         settings: opts.clone(),
+        openid,
     });
 
     // Note: Read bottom to top

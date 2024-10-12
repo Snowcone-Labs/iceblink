@@ -6,6 +6,41 @@
     <title>Iceblink Sync Service</title>
   </head>
   <body>
-    <h1>Iceblink Sync Service</h1>
+    <main>
+      <h1>Iceblink Sync Service</h1>
+      <a>Authenticate</a>
+    </main>
   </body>
+  <script>
+    (async () => {
+      const metaRequest = await fetch("/v1/");
+      const meta = await metaRequest.json();
+      document.querySelector("a").href = `${meta.authorize}?client_id=${
+        meta.client_id
+      }&scope=profile&redirect_uri=${encodeURIComponent(
+        meta.redirect_uri
+      )}&state=todo`;
+    })();
+  </script>
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0c0c0d;
+      color: white;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui;
+    }
+
+    a {
+      width: 100%;
+      text-align: center;
+      color: #6dade6;
+    }
+  </style>
 </html>
