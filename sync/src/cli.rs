@@ -1,4 +1,4 @@
-use clap::{command, Parser};
+use clap::{Parser, Subcommand};
 
 #[derive(clap::ValueEnum, Clone, Debug)]
 pub(crate) enum LoggingLevel {
@@ -26,13 +26,21 @@ impl From<LoggingLevel> for tracing_subscriber::filter::LevelFilter {
 #[derive(Parser)]
 #[command(version, about, author)]
 pub(crate) struct Cli {
-    /// Optional port to use. Default is 8085
-    #[arg(short, long, env = "ICEBLINK_PORT")]
-    pub(crate) port: Option<u32>,
+    #[command(subcommand)]
+    pub(crate) command: Commands,
 
     /// Optional logging level to use. Default is info
     #[arg(short, long, env = "ICEBLINK_LOGGING_LEVEL")]
     pub(crate) logging: Option<LoggingLevel>,
+}
+
+#[derive(Subcommand)]
+pub(crate) enum Commands {
+    Serve {
+        /// Optional port to use. Default is 8085
+        #[arg(short, long, env = "ICEBLINK_PORT")]
+        port: Option<u32>,
+    },
 }
 
 pub(crate) fn get_settings() -> Cli {

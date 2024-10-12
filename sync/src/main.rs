@@ -1,5 +1,6 @@
 pub mod cli;
 pub mod server;
+use cli::Commands;
 use server::ServerOptions;
 use tracing::info;
 
@@ -11,12 +12,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_max_level(settings.logging.unwrap_or(cli::LoggingLevel::Info))
         .init();
 
-    info!("Iceblink Sync");
-
-    server::create_server(ServerOptions {
-        port: settings.port.unwrap_or(8085),
-    })
-    .await;
+    match &settings.command {
+        Commands::Serve { port } => {
+            info!("Iceblink Sync Server");
+            server::create_server(ServerOptions {
+                port: port.unwrap_or(8085),
+            })
+            .await;
+        }
+    }
 
     Ok(())
 }
