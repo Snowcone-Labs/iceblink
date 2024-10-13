@@ -11,7 +11,7 @@ mod tests {
 
     #[test]
     fn test_generate_id() {
-        let regex = Regex::new(r"[a-zA-Z0-9]*").unwrap();
+        let regex = Regex::new(r"^[a-zA-Z0-9]*$").unwrap();
         let ids: Vec<String> = vec![];
 
         for _ in 0..50 {
