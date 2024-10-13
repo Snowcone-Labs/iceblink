@@ -1,4 +1,5 @@
 use clap::{Parser, Subcommand};
+use tracing::level_filters::LevelFilter;
 
 #[derive(clap::ValueEnum, Clone, Debug)]
 pub enum LoggingLevel {
@@ -10,15 +11,15 @@ pub enum LoggingLevel {
     None,
 }
 
-impl From<LoggingLevel> for tracing_subscriber::filter::LevelFilter {
+impl From<LoggingLevel> for LevelFilter {
     fn from(value: LoggingLevel) -> Self {
         match value {
-            LoggingLevel::Trace => tracing_subscriber::filter::LevelFilter::TRACE,
-            LoggingLevel::Debug => tracing_subscriber::filter::LevelFilter::DEBUG,
-            LoggingLevel::Info => tracing_subscriber::filter::LevelFilter::INFO,
-            LoggingLevel::Warn => tracing_subscriber::filter::LevelFilter::WARN,
-            LoggingLevel::Error => tracing_subscriber::filter::LevelFilter::ERROR,
-            LoggingLevel::None => tracing_subscriber::filter::LevelFilter::OFF,
+            LoggingLevel::Trace => LevelFilter::TRACE,
+            LoggingLevel::Debug => LevelFilter::DEBUG,
+            LoggingLevel::Info => LevelFilter::INFO,
+            LoggingLevel::Warn => LevelFilter::WARN,
+            LoggingLevel::Error => LevelFilter::ERROR,
+            LoggingLevel::None => LevelFilter::OFF,
         }
     }
 }
