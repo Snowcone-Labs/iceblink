@@ -9,7 +9,7 @@ use axum::{
     response::IntoResponse,
     Json,
 };
-use axum_extra::extract::cookie::CookieJar;
+use axum_extra::extract::cookie::{Cookie, CookieJar, SameSite};
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};
@@ -25,7 +25,7 @@ pub struct TokenClaims {
     pub avatar_url: String,
 }
 
-pub async fn create_jwt(user: &User, secret: String) -> String {
+pub async fn create_jwt(user: &User, secret: String) -> (String, Cookie) {
     let now = chrono::Utc::now();
 
     let claims = TokenClaims {
@@ -37,12 +37,20 @@ pub async fn create_jwt(user: &User, secret: String) -> String {
         avatar_url: user.avatar_url.clone(),
     };
 
-    encode(
+    let jwt = encode(
         &Header::default(),
         &claims,
         &EncodingKey::from_secret(secret.as_ref()),
     )
-    .unwrap()
+    .unwrap();
+
+    let cookie = Cookie::build(("iceblink_jwt", jwt.clone()))
+        .same_site(SameSite::Strict)
+        .secure(true)
+        .http_only(true)
+        .build();
+
+    (jwt, cookie)
 }
 
 #[derive(Debug, Serialize)]
@@ -191,7 +199,6 @@ impl OpenId {
             .await?
             .json::<TokenExchangeResponse>()
             .await?;
-        // info!("Response to exchange: {:?}", response);
 
         Ok(response.access_token)
     }
