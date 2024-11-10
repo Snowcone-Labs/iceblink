@@ -77,7 +77,7 @@ pub async fn create_server(opts: ServerOptions) {
         .with_state(state)
         .nest_service(
             "/",
-            MemoryServe::new(load_assets!("static"))
+            MemoryServe::new(load_assets!("./src/static"))
                 .index_file(Some("/landing.html"))
                 .html_cache_control(memory_serve::CacheControl::Long)
                 .enable_clean_url(true)
