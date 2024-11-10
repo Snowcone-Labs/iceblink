@@ -32,6 +32,7 @@ pub struct AppState {
 }
 
 pub async fn create_server(opts: ServerOptions) {
+    info!("Connecting to SQLite: iceblink.db");
     let pool = SqlitePool::connect_with(
         SqliteConnectOptions::new()
             .filename("iceblink.db")
@@ -40,11 +41,13 @@ pub async fn create_server(opts: ServerOptions) {
     .await
     .expect("Unable to connect with SQLite");
 
+    info!("Running SQL migrations");
     sqlx::migrate!()
         .run(&pool)
         .await
         .expect("Unable to run database migrations");
 
+    info!("Discovering OpenId configuration");
     let openid = auth::OpenId::new(
         opts.clone().client_id,
         opts.clone().client_secret,
@@ -53,6 +56,7 @@ pub async fn create_server(opts: ServerOptions) {
     .await
     .expect("Unable to setup OpenId authentication");
 
+    info!("Configuring HTTP server");
     let state = Arc::new(AppState {
         db: pool,
         settings: opts.clone(),
