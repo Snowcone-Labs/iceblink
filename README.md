@@ -1,6 +1,6 @@
 # Iceblink
 
-TOTP authenticator app by Snowflake-Software.
+TOTP authentication app by Snowflake-Software.
 
 ## Sync Server
 
