@@ -31,32 +31,8 @@ pub struct AppState {
     pub openid: auth::OpenId,
 }
 
-async fn routes(opts: ServerOptions) -> Router {
-    info!("Connecting to SQLite: iceblink.db");
-    let pool = SqlitePool::connect_with(
-        SqliteConnectOptions::new()
-            .filename("iceblink.db")
-            .create_if_missing(true),
-    )
-    .await
-    .expect("Unable to connect with SQLite");
-
-    info!("Running SQL migrations");
-    sqlx::migrate!()
-        .run(&pool)
-        .await
-        .expect("Unable to run database migrations");
-
-    info!("Discovering OpenId configuration");
-    let openid = auth::OpenId::new(
-        opts.clone().client_id,
-        opts.clone().client_secret,
-        opts.clone().oauth_server,
-    )
-    .await
-    .expect("Unable to setup OpenId authentication");
-
-    info!("Configuring HTTP server");
+#[bon::builder]
+pub async fn routes(pool: SqlitePool, opts: ServerOptions, openid: auth::OpenId) -> Router {
     let state = Arc::new(AppState {
         db: pool,
         settings: opts.clone(),
@@ -100,7 +76,37 @@ async fn routes(opts: ServerOptions) -> Router {
 }
 
 pub async fn serve(opts: ServerOptions) {
-    let routes = routes(opts.clone()).await;
+    info!("Connecting to SQLite: iceblink.db");
+    let pool = SqlitePool::connect_with(
+        SqliteConnectOptions::new()
+            .filename("iceblink.db")
+            .create_if_missing(true),
+    )
+    .await
+    .expect("Unable to connect with SQLite");
+
+    info!("Running SQL migrations");
+    sqlx::migrate!()
+        .run(&pool)
+        .await
+        .expect("Unable to run database migrations");
+
+    info!("Discovering OpenId configuration");
+    let openid = auth::OpenId::new(
+        opts.clone().client_id,
+        opts.clone().client_secret,
+        opts.clone().oauth_server,
+    )
+    .await
+    .expect("Unable to setup OpenId authentication");
+
+    info!("Configuring HTTP server");
+    let routes = routes()
+        .pool(pool)
+        .opts(opts.clone())
+        .openid(openid)
+        .call()
+        .await;
 
     info!("Starting HTTP server");
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", opts.port))
