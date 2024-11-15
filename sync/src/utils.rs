@@ -12,18 +12,22 @@ mod tests {
     #[test]
     fn test_generate_id() {
         let regex = Regex::new(r"^[a-zA-Z0-9]*$").unwrap();
-        let ids: Vec<String> = vec![];
+        let mut ids: Vec<String> = vec![];
 
-        for _ in 0..50 {
+        for _ in 0..500 {
             let id = generate_id(16);
-            assert!(regex.is_match(id.as_str()));
+
             assert_eq!(id.len(), 16);
+            assert!(regex.is_match(id.as_str()));
             assert!(!ids.contains(&id));
+
+            ids.push(id.clone());
         }
 
-        for x in 0..10 {
+        for x in 0..100 {
             let id = generate_id(x);
             assert_eq!(id.len(), x);
+            assert!(regex.is_match(id.as_str()));
         }
     }
 }
