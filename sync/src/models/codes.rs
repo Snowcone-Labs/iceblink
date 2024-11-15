@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use sqlx::{Sqlite, SqlitePool};
+use sqlx::SqlitePool;
 
 #[derive(Serialize, Deserialize, Clone, Debug, sqlx::FromRow)]
 pub struct Code {
@@ -11,6 +11,7 @@ pub struct Code {
     pub website_url: Option<String>,
 }
 
+#[bon::bon]
 impl Code {
     pub async fn get(
         pool: &SqlitePool,
@@ -50,5 +51,68 @@ impl Code {
             .await?;
 
         Ok(())
+    }
+
+    #[builder]
+    pub async fn edit(
+        &mut self,
+        pool: &SqlitePool,
+        content: Option<String>,
+        display_name: Option<String>,
+        icon_url: Option<String>,
+        website_url: Option<String>,
+    ) -> Result<&Code, sqlx::error::Error> {
+        let mut tx = pool.begin().await?;
+
+        if let Some(content_inner) = content {
+            sqlx::query!(
+                "UPDATE codes SET content = $2 WHERE id = $1",
+                self.id,
+                content_inner
+            )
+            .execute(&mut *tx)
+            .await?;
+
+            self.content = content_inner;
+        }
+
+        if let Some(display_name_inner) = display_name {
+            sqlx::query!(
+                "UPDATE codes SET display_name = $2 WHERE id = $1",
+                self.id,
+                display_name_inner
+            )
+            .execute(&mut *tx)
+            .await?;
+
+            self.display_name = display_name_inner;
+        }
+
+        if let Some(icon_url_inner) = icon_url {
+            sqlx::query!(
+                "UPDATE codes SET icon_url = $2 WHERE id = $1",
+                self.id,
+                icon_url_inner
+            )
+            .execute(&mut *tx)
+            .await?;
+
+            self.icon_url = Some(icon_url_inner);
+        }
+
+        if let Some(website_url_inner) = website_url {
+            sqlx::query!(
+                "UPDATE codes SET website_url = $2 WHERE id = $1",
+                self.id,
+                website_url_inner
+            )
+            .execute(&mut *tx)
+            .await?;
+
+            self.website_url = Some(website_url_inner);
+        };
+
+        tx.commit().await?;
+        Ok(self)
     }
 }

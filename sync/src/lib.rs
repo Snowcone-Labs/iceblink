@@ -5,7 +5,7 @@ pub mod routes;
 pub mod utils;
 
 use axum::http::{Method, Request};
-use axum::routing::{delete, get, put};
+use axum::routing::{delete, get, patch, put};
 use axum::{middleware, Router};
 use memory_serve::{load_assets, MemoryServe};
 use sqlx::sqlite::SqliteConnectOptions;
@@ -52,7 +52,8 @@ pub async fn configure_router(
     Router::new()
         .route("/v1/codes", get(routes::v1::codes::list_all))
         .route("/v1/codes", put(routes::v1::codes::add))
-        .route("/v1/code/:uuid", delete(routes::v1::codes::delete))
+        .route("/v1/code/:id", delete(routes::v1::codes::delete))
+        .route("/v1/code/:id", patch(routes::v1::codes::edit))
         .layer(middleware::from_fn_with_state(
             state.clone(),
             auth::jwt_middleware,

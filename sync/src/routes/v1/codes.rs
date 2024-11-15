@@ -34,7 +34,7 @@ pub async fn add(
     State(state): State<Arc<AppState>>,
     Extension(user): Extension<User>,
     Json(payload): Json<CodeAddPayload>,
-) -> Json<Code> {
+) -> Result<Json<Code>, ApiError> {
     let code = Code {
         id: utils::generate_id(16),
         owner_id: user.id,
@@ -44,8 +44,35 @@ pub async fn add(
         icon_url: None,
     };
 
-    code.insert(&state.db).await.expect("Unable to insert code");
-    Json(code)
+    code.insert(&state.db).await?;
+    Ok(Json(code))
+}
+
+#[derive(Deserialize)]
+pub struct CodeEditPayload {
+    pub content: Option<String>,
+    pub display_name: Option<String>,
+    pub website_url: Option<String>,
+}
+
+pub async fn edit(
+    State(state): State<Arc<AppState>>,
+    Extension(user): Extension<User>,
+    Path(id): Path<String>,
+    Json(payload): Json<CodeEditPayload>,
+) -> Result<Json<Code>, ApiError> {
+    Ok(Json(
+        Code::get(&state.db, id, user.id)
+            .await?
+            .edit()
+            .pool(&state.db)
+            .maybe_content(payload.content)
+            .maybe_display_name(payload.display_name)
+            .maybe_website_url(payload.website_url)
+            .call()
+            .await?
+            .clone(),
+    ))
 }
 
 pub async fn delete(
