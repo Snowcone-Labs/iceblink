@@ -1,6 +1,6 @@
 use crate::{
     models::{self, user::User},
-    server::AppState,
+    AppState,
 };
 use axum::{
     extract::{Request, State},

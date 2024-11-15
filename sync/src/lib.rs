@@ -1,4 +1,9 @@
-use crate::{auth, routes};
+pub mod auth;
+pub mod cli;
+pub mod models;
+pub mod routes;
+pub mod utils;
+
 use axum::http::{Method, Request};
 use axum::routing::{delete, get, put};
 use axum::{middleware, Router};
@@ -32,7 +37,11 @@ pub struct AppState {
 }
 
 #[bon::builder]
-pub async fn routes(pool: SqlitePool, opts: ServerOptions, openid: auth::OpenId) -> Router {
+pub async fn configure_router(
+    pool: SqlitePool,
+    opts: ServerOptions,
+    openid: auth::OpenId,
+) -> Router {
     let state = Arc::new(AppState {
         db: pool,
         settings: opts.clone(),
@@ -101,7 +110,7 @@ pub async fn serve(opts: ServerOptions) {
     .expect("Unable to setup OpenId authentication");
 
     info!("Configuring HTTP server");
-    let routes = routes()
+    let routes = configure_router()
         .pool(pool)
         .opts(opts.clone())
         .openid(openid)

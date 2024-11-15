@@ -1,4 +1,4 @@
-use crate::server::AppState;
+use crate::AppState;
 use axum::{extract::State, http::StatusCode, Json};
 use serde::Serialize;
 use std::sync::Arc;

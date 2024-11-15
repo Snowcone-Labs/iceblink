@@ -1,12 +1,5 @@
-pub mod auth;
-pub mod cli;
-pub mod models;
-pub mod routes;
-pub mod server;
-pub mod utils;
-
-use cli::Commands;
-use server::ServerOptions;
+use iceblink_sync::cli;
+use iceblink_sync::ServerOptions;
 use std::error::Error;
 use tracing::info;
 
@@ -20,7 +13,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .init();
 
     match &settings.command {
-        Commands::Serve {
+        cli::Commands::Serve {
             port,
             client_id,
             client_secret,
@@ -30,7 +23,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         } => {
             info!("Iceblink Sync Server");
 
-            server::serve(ServerOptions {
+            iceblink_sync::serve(ServerOptions {
                 port: port.unwrap_or(8085),
                 client_id: client_id.to_string(),
                 client_secret: client_secret.to_string(),

@@ -1,8 +1,7 @@
 use crate::{
     auth,
     models::{self, user::User},
-    server::AppState,
-    utils,
+    utils, AppState,
 };
 use axum::{
     extract::{Query, State},
