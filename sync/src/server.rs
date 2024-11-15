@@ -1,7 +1,7 @@
 use crate::{auth, routes};
 use axum::http::{Method, Request};
-use axum::middleware;
 use axum::routing::{delete, get, put};
+use axum::{middleware, Router};
 use memory_serve::{load_assets, MemoryServe};
 use sqlx::sqlite::SqliteConnectOptions;
 use sqlx::SqlitePool;
@@ -31,7 +31,7 @@ pub struct AppState {
     pub openid: auth::OpenId,
 }
 
-pub async fn create_server(opts: ServerOptions) {
+async fn routes(opts: ServerOptions) -> Router {
     info!("Connecting to SQLite: iceblink.db");
     let pool = SqlitePool::connect_with(
         SqliteConnectOptions::new()
@@ -64,7 +64,7 @@ pub async fn create_server(opts: ServerOptions) {
     });
 
     // Note: Read bottom to top
-    let app = axum::Router::new()
+    Router::new()
         .route("/v1/codes", get(routes::v1::codes::list_all))
         .route("/v1/codes", put(routes::v1::codes::add))
         .route("/v1/code/:uuid", delete(routes::v1::codes::delete))
@@ -96,7 +96,11 @@ pub async fn create_server(opts: ServerOptions) {
                 info!("{} {}", request.method(), request.uri().path())
             }),
         )
-        .layer(TimeoutLayer::new(Duration::from_secs(2)));
+        .layer(TimeoutLayer::new(Duration::from_secs(2)))
+}
+
+pub async fn serve(opts: ServerOptions) {
+    let routes = routes(opts.clone()).await;
 
     info!("Starting HTTP server");
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", opts.port))
@@ -104,7 +108,7 @@ pub async fn create_server(opts: ServerOptions) {
         .unwrap();
 
     info!("Listening on http://{}", listener.local_addr().unwrap());
-    axum::serve(listener, app)
+    axum::serve(listener, routes)
         .with_graceful_shutdown(shutdown_signal())
         .await
         .unwrap();

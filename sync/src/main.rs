@@ -30,7 +30,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         } => {
             info!("Iceblink Sync Server");
 
-            server::create_server(ServerOptions {
+            server::serve(ServerOptions {
                 port: port.unwrap_or(8085),
                 client_id: client_id.to_string(),
                 client_secret: client_secret.to_string(),
