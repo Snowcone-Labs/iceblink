@@ -19,10 +19,11 @@ jobs:
         working-directory: ./sync
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@nightly
+      - run: rustup toolchain install nightly --component rustfmt --profile minimal
+      - uses: Swatinem/rust-cache@v2
         with:
-          components: rustfmt
-      - run: cargo install sqlx-cli --no-default-features --features sqlite-unbundled
+          workspaces: ./sync -> target
+      - run: cargo install sqlx-cli --no-default-features --features sqlite
       - run: sqlx database setup
       - run: cargo build --verbose
       - run: cargo test --verbose
