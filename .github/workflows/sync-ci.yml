@@ -22,6 +22,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: rustfmt
+      - run: cargo install sqlx-cli --no-default-features --features sqlite-unbundled
+      - run: sqlx database setup
       - run: cargo build --verbose
       - run: cargo test --verbose
       - uses: mbrobbel/rustfmt-check@master
