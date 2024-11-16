@@ -102,6 +102,11 @@ pub async fn configure_router(
                 .enable_gzip(true)
                 .into_router(),
         )
+        .split_for_parts();
+
+    let router = router.merge(SwaggerUi::new("/docs").url("/openapi.json", api));
+
+    router
         .layer(
             CorsLayer::new()
                 .allow_methods([Method::GET])
@@ -114,9 +119,6 @@ pub async fn configure_router(
             }),
         )
         .layer(TimeoutLayer::new(Duration::from_secs(2)))
-        .split_for_parts();
-
-    router.merge(SwaggerUi::new("/docs").url("/openapi.json", api))
 }
 
 pub async fn serve(opts: ServerOptions) {
@@ -144,7 +146,7 @@ pub async fn serve(opts: ServerOptions) {
     .await
     .expect("Unable to setup OpenId authentication");
 
-    info!("Configuring HTTP server");
+    info!("Configuring HTTP router");
     let routes = configure_router()
         .pool(pool)
         .opts(opts.clone())
