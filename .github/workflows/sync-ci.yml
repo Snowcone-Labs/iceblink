@@ -21,7 +21,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: rustfmt
-      - run: cd sync
       - run: cargo build --verbose
       - run: cargo test --verbose
       - uses: mbrobbel/rustfmt-check@master
