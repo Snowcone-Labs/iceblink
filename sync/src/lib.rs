@@ -5,7 +5,6 @@ pub mod routes;
 pub mod utils;
 
 use axum::http::{Method, Request};
-use axum::routing::{delete, get, patch, put};
 use axum::{middleware, Router};
 use memory_serve::{load_assets, MemoryServe};
 use sqlx::sqlite::SqliteConnectOptions;
@@ -18,6 +17,10 @@ use tower_http::cors::CorsLayer;
 use tower_http::timeout::TimeoutLayer;
 use tower_http::trace::TraceLayer;
 use tracing::{info, Span};
+use utoipa::OpenApi;
+use utoipa_axum::router::OpenApiRouter;
+use utoipa_axum::routes;
+use utoipa_swagger_ui::SwaggerUi;
 
 #[derive(Clone)]
 pub struct ServerOptions {
@@ -36,6 +39,30 @@ pub struct AppState {
     pub openid: auth::OpenId,
 }
 
+#[derive(OpenApi)]
+#[openapi(
+	tags(
+		(name = "codes", description = "Code management endpoints"),
+		(name = "misc", description = "Other endpoints")
+	),
+	servers(
+		(url = "http://localhost:8085", description = "Local development server"),
+		(url = "https://iceblink.snowflake.blue", description = "Production server")
+	),
+	info(
+		title ="IceBlink Sync Server",
+		contact(
+			url="https://snowflake.blue",
+			name="Snowflake-Software",
+		),
+		license(
+			name="AGPLv3",
+			identifier="AGPL-3.0-or-later"
+		)
+	)
+)]
+pub struct ApiDocumentation;
+
 #[bon::builder]
 pub async fn configure_router(
     pool: SqlitePool,
@@ -49,17 +76,21 @@ pub async fn configure_router(
     });
 
     // Note: Read bottom to top
-    Router::new()
-        .route("/v1/codes", get(routes::v1::codes::list_all))
-        .route("/v1/codes", put(routes::v1::codes::add))
-        .route("/v1/code/:id", delete(routes::v1::codes::delete))
-        .route("/v1/code/:id", patch(routes::v1::codes::edit))
+    let (router, api) = OpenApiRouter::with_openapi(ApiDocumentation::openapi())
+        .routes(routes!(
+            routes::v1::codes::list_all_codes,
+            routes::v1::codes::add_code
+        ))
+        .routes(routes!(
+            routes::v1::codes::delete_code,
+            routes::v1::codes::edit_code
+        ))
         .layer(middleware::from_fn_with_state(
             state.clone(),
             auth::jwt_middleware,
         ))
-        .route("/v1/", get(routes::v1::index::index))
-        .route("/v1/oauth", get(routes::v1::auth::oauth))
+        .routes(routes!(routes::v1::index::index))
+        .routes(routes!(routes::v1::auth::oauth))
         .with_state(state)
         .nest_service(
             "/",
@@ -83,6 +114,9 @@ pub async fn configure_router(
             }),
         )
         .layer(TimeoutLayer::new(Duration::from_secs(2)))
+        .split_for_parts();
+
+    router.merge(SwaggerUi::new("/docs").url("/openapi.json", api))
 }
 
 pub async fn serve(opts: ServerOptions) {

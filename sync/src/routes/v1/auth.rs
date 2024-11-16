@@ -11,12 +11,24 @@ use reqwest::{header, StatusCode};
 use serde::Deserialize;
 use std::sync::Arc;
 use tracing::warn;
+use utoipa::IntoParams;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, IntoParams)]
 pub struct OauthQueryParams {
     code: String,
 }
 
+#[utoipa::path(
+	method(get),
+	path = "/v1/oauth",
+	tag = "misc",
+	responses(
+		(status = OK, description = "Success")
+	),
+	params(
+		OauthQueryParams
+	)
+)]
 pub async fn oauth(
     State(state): State<Arc<AppState>>,
     query: Query<OauthQueryParams>,

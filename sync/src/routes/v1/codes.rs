@@ -1,3 +1,4 @@
+use super::ApiError;
 use crate::{
     models::{codes::Code, user::User},
     utils, AppState,
@@ -9,10 +10,17 @@ use axum::{
 };
 use serde::Deserialize;
 use std::sync::Arc;
+use utoipa::ToSchema;
 
-use super::ApiError;
-
-pub async fn list_all(
+#[utoipa::path(
+	method(get),
+	path = "/v1/codes",
+	responses(
+		(status = OK, description = "Success", body = Vec<Code>)
+	),
+	tag = "codes"
+)]
+pub async fn list_all_codes(
     State(state): State<Arc<AppState>>,
     Extension(user): Extension<User>,
 ) -> Json<Vec<Code>> {
@@ -23,14 +31,22 @@ pub async fn list_all(
     )
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct CodeAddPayload {
     pub content: String,
     pub display_name: String,
     pub website_url: Option<String>,
 }
 
-pub async fn add(
+#[utoipa::path(
+	method(put),
+	path = "/v1/codes",
+	responses(
+		(status = OK, description = "Success", body = Code)
+	),
+	tag = "codes"
+)]
+pub async fn add_code(
     State(state): State<Arc<AppState>>,
     Extension(user): Extension<User>,
     Json(payload): Json<CodeAddPayload>,
@@ -48,14 +64,25 @@ pub async fn add(
     Ok(Json(code))
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct CodeEditPayload {
     pub content: Option<String>,
     pub display_name: Option<String>,
     pub website_url: Option<String>,
 }
 
-pub async fn edit(
+#[utoipa::path(
+	method(patch),
+	path = "/v1/code/{id}",
+	tag = "codes",
+	responses(
+		(status = OK, description = "Success", body = Vec<Code>)
+	),
+	params(
+		("id", description = "Code ID")
+	)
+)]
+pub async fn edit_code(
     State(state): State<Arc<AppState>>,
     Extension(user): Extension<User>,
     Path(id): Path<String>,
@@ -75,7 +102,18 @@ pub async fn edit(
     ))
 }
 
-pub async fn delete(
+#[utoipa::path(
+	method(delete),
+	path = "/v1/code/{id}",
+	tag = "codes",
+	responses(
+		(status = NO_CONTENT, description = "Deleted")
+	),
+	params(
+		("id", description = "Code ID")
+	)
+)]
+pub async fn delete_code(
     State(state): State<Arc<AppState>>,
     Extension(user): Extension<User>,
     Path(id): Path<String>,
