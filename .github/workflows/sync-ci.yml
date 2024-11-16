@@ -30,3 +30,5 @@ jobs:
       - uses: mbrobbel/rustfmt-check@master
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          args: --manifest-path ./sync/Cargo.toml
+          commit-message: "chore(sync): fmt"
