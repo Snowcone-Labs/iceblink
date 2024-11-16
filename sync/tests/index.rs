@@ -1,16 +1,36 @@
-// use iceblink_sync::configure_router;
+use axum::{
+    body::Body,
+    http::{Method, Request, StatusCode},
+};
+use serde_json::json;
+use sqlx::SqlitePool;
+use tower::ServiceExt;
 
-// #[tokio::test]
-// async fn index() {
-//     let app = configure_router();
+pub mod common;
 
-//     let response = app
-//         .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
-//         .await
-//         .unwrap();
+#[sqlx::test]
+async fn index(db: SqlitePool) {
+    let app = common::testing_setup(db).await;
 
-//     assert_eq!(response.status(), StatusCode::OK);
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri("/v1/")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
 
-//     let body = response.into_body().collect().await.unwrap().to_bytes();
-//     assert_eq!(&body[..], b"Hello, World!");
-// }
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(
+        common::convert_response(response).await,
+        json!({
+            "version": env!("CARGO_PKG_VERSION"),
+            "authorize": "N/A",
+            "client_id": "N/A",
+            "redirect_uri": "N/A",
+        })
+    );
+}

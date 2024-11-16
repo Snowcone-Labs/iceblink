@@ -161,8 +161,10 @@ struct TokenExchangeRequest {
     code: String,
 }
 
+#[bon::bon]
 impl OpenId {
-    pub async fn new(
+    #[builder]
+    pub async fn discover(
         client_id: String,
         client_secret: String,
         server: String,

@@ -65,11 +65,7 @@ pub struct AppState {
 pub struct ApiDocumentation;
 
 #[bon::builder]
-pub async fn configure_router(
-    pool: SqlitePool,
-    opts: ServerOptions,
-    openid: auth::OpenId,
-) -> Router {
+pub fn configure_router(pool: SqlitePool, opts: ServerOptions, openid: auth::OpenId) -> Router {
     let state = Arc::new(AppState {
         db: pool,
         settings: opts.clone(),
@@ -138,21 +134,20 @@ pub async fn serve(opts: ServerOptions) {
         .expect("Unable to run database migrations");
 
     info!("Discovering OpenId configuration");
-    let openid = auth::OpenId::new(
-        opts.clone().client_id,
-        opts.clone().client_secret,
-        opts.clone().oauth_server,
-    )
-    .await
-    .expect("Unable to setup OpenId authentication");
+    let openid = auth::OpenId::discover()
+        .client_id(opts.clone().client_id)
+        .client_secret(opts.clone().client_secret)
+        .server(opts.clone().oauth_server)
+        .call()
+        .await
+        .expect("Unable to setup OpenId authentication");
 
     info!("Configuring HTTP router");
     let routes = configure_router()
         .pool(pool)
         .opts(opts.clone())
         .openid(openid)
-        .call()
-        .await;
+        .call();
 
     info!("Starting HTTP server");
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", opts.port))
