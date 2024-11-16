@@ -65,9 +65,9 @@ pub struct AppState {
 pub struct ApiDocumentation;
 
 #[bon::builder]
-pub fn configure_router(pool: SqlitePool, opts: ServerOptions, openid: auth::OpenId) -> Router {
+pub fn configure_router(pool: &SqlitePool, opts: ServerOptions, openid: auth::OpenId) -> Router {
     let state = Arc::new(AppState {
-        db: pool,
+        db: pool.clone(),
         settings: opts.clone(),
         openid,
     });
@@ -144,7 +144,7 @@ pub async fn serve(opts: ServerOptions) {
 
     info!("Configuring HTTP router");
     let routes = configure_router()
-        .pool(pool)
+        .pool(&pool)
         .opts(opts.clone())
         .openid(openid)
         .call();
