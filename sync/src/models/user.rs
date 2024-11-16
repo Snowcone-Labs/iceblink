@@ -36,4 +36,12 @@ impl User {
 
         Ok(())
     }
+
+    pub async fn delete(&self, pool: &SqlitePool) -> Result<(), sqlx::error::Error> {
+        sqlx::query!("DELETE from users WHERE id = $1", self.id)
+            .execute(pool)
+            .await?;
+
+        Ok(())
+    }
 }

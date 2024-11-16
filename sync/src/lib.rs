@@ -43,6 +43,7 @@ pub struct AppState {
 #[openapi(
 	tags(
 		(name = "codes", description = "Code management endpoints"),
+		(name = "user", description = "User endpoints"),
 		(name = "misc", description = "Other endpoints")
 	),
 	servers(
@@ -85,12 +86,13 @@ pub async fn configure_router(
             routes::v1::codes::delete_code,
             routes::v1::codes::edit_code
         ))
+        .routes(routes!(routes::v1::user::delete_account))
         .layer(middleware::from_fn_with_state(
             state.clone(),
             auth::jwt_middleware,
         ))
         .routes(routes!(routes::v1::index::index))
-        .routes(routes!(routes::v1::auth::oauth))
+        .routes(routes!(routes::v1::user::oauth))
         .with_state(state)
         .nest_service(
             "/",
@@ -103,10 +105,8 @@ pub async fn configure_router(
                 .into_router(),
         )
         .split_for_parts();
-
-    let router = router.merge(SwaggerUi::new("/docs").url("/openapi.json", api));
-
     router
+        .merge(SwaggerUi::new("/docs").url("/openapi.json", api))
         .layer(
             CorsLayer::new()
                 .allow_methods([Method::GET])

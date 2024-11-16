@@ -6,12 +6,15 @@ use crate::{
 use axum::{
     extract::{Query, State},
     http::HeaderMap,
+    Extension,
 };
 use reqwest::{header, StatusCode};
 use serde::Deserialize;
 use std::sync::Arc;
 use tracing::warn;
 use utoipa::IntoParams;
+
+use super::ApiError;
 
 #[derive(Deserialize, IntoParams)]
 pub struct OauthQueryParams {
@@ -21,7 +24,7 @@ pub struct OauthQueryParams {
 #[utoipa::path(
 	method(get),
 	path = "/v1/oauth",
-	tag = "misc",
+	tag = "user",
 	responses(
 		(status = OK, description = "Success")
 	),
@@ -85,4 +88,20 @@ pub async fn oauth(
 
         (StatusCode::OK, headers)
     }
+}
+
+#[utoipa::path(
+	method(delete),
+	path = "/v1/user",
+	tag = "user",
+	responses(
+		(status = NO_CONTENT, description = "Successfully deleted")
+	),
+)]
+pub async fn delete_account(
+    State(state): State<Arc<AppState>>,
+    Extension(user): Extension<User>,
+) -> Result<StatusCode, ApiError> {
+    user.delete(&state.db).await?;
+    Ok(StatusCode::NO_CONTENT)
 }

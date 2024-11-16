@@ -1,9 +1,9 @@
 use axum::{http::StatusCode, response::IntoResponse, Json};
 use serde::Serialize;
 
-pub mod auth;
 pub mod codes;
 pub mod index;
+pub mod user;
 
 #[derive(Serialize)]
 pub struct ApiErrorResponse {
