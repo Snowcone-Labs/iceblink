@@ -112,6 +112,7 @@ async fn add_codes(db: SqlitePool) {
     assert_eq!(added_res.icon_url, None);
     assert_eq!(added_res.website_url, None);
     assert_eq!(added_res.owner_id, common::USER1_ID);
+    assert_eq!(added_res.id.len(), 16);
 
     // Check that it was added to the list
     let user1_after = app

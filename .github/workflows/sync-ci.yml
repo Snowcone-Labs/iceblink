@@ -25,8 +25,11 @@ jobs:
           workspaces: ./sync -> target
       - run: cargo install sqlx-cli --no-default-features --features sqlite
       - run: sqlx database setup
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: nextest
       - run: cargo build --verbose
-      - run: cargo test --verbose
+      - run: cargo nextest run
       - uses: mbrobbel/rustfmt-check@master
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
