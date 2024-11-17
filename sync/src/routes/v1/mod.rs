@@ -21,7 +21,8 @@ pub enum ApiError {
     NotFound,
     DatabaseError(sqlx::Error),
     MissingAuthentication,
-    JwtInvalid,
+    InvalidAuthentication,
+    InvalidJwtSignature,
     JwtUserGone,
 }
 
@@ -37,7 +38,8 @@ impl IntoResponse for ApiError {
                 StatusCode::UNAUTHORIZED,
                 "Missing authentication. Supply a JWT in the `iceblink_jwt` cookie, or use a bearer in the `Authorization` header.",
             ),
-			ApiError::JwtInvalid => (StatusCode::UNAUTHORIZED, "The supplied authentication is invalid."),
+			ApiError::InvalidAuthentication => (StatusCode::UNAUTHORIZED, "The supplied authentication is invalid."),
+			ApiError::InvalidJwtSignature => (StatusCode::UNAUTHORIZED, "The supplied authentication has an invalid signature. Try logging in again."),
 			ApiError::JwtUserGone => (StatusCode::UNAUTHORIZED, "Authenticated user does not exist. Has the account been deleted?")
         };
 
@@ -81,8 +83,12 @@ impl From<sqlx::Error> for ApiError {
 }
 
 impl From<jsonwebtoken::errors::Error> for ApiError {
-    fn from(_: jsonwebtoken::errors::Error) -> Self {
-        ApiError::JwtInvalid
+    fn from(value: jsonwebtoken::errors::Error) -> Self {
+        match value.into_kind() {
+            jsonwebtoken::errors::ErrorKind::ExpiredSignature
+            | jsonwebtoken::errors::ErrorKind::InvalidSignature => ApiError::InvalidJwtSignature,
+            _ => ApiError::InvalidAuthentication,
+        }
     }
 }
 

@@ -67,8 +67,10 @@ pub async fn jwt_middleware(
                 .get(header::AUTHORIZATION)
                 .and_then(|auth_header| auth_header.to_str().ok())
                 .and_then(|auth_value| auth_value.strip_prefix("Bearer "))
-                .map(|auth_value_inner| auth_value_inner.to_string())
-        });
+                .map(str::to_string)
+        })
+        .filter(|v| !v.trim().is_empty())
+        .map(|v| v.trim().to_string());
 
     let token = token.ok_or(ApiError::MissingAuthentication)?;
 
