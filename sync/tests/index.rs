@@ -6,7 +6,7 @@ use serde_json::json;
 use sqlx::SqlitePool;
 use tower::ServiceExt;
 
-mod common;
+pub mod common;
 
 #[sqlx::test]
 async fn index(db: SqlitePool) {
