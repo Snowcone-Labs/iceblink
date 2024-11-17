@@ -24,6 +24,11 @@ pub enum ApiError {
     InvalidAuthentication,
     InvalidJwtSignature,
     JwtUserGone,
+    /// Usually caused by giving IceBlink an invalid authentication token.
+    /// Still logging a warning regardless.
+    OpenIdTokenExchangeFail(reqwest::Error),
+    /// This should generally not happen, since we have received an authenticated token from the IdP.
+    OpenIdUserinfoFail(reqwest::Error),
 }
 
 impl IntoResponse for ApiError {
@@ -40,7 +45,15 @@ impl IntoResponse for ApiError {
             ),
 			ApiError::InvalidAuthentication => (StatusCode::UNAUTHORIZED, "The supplied authentication is invalid."),
 			ApiError::InvalidJwtSignature => (StatusCode::UNAUTHORIZED, "The supplied authentication has an invalid signature. Try logging in again."),
-			ApiError::JwtUserGone => (StatusCode::UNAUTHORIZED, "Authenticated user does not exist. Has the account been deleted?")
+			ApiError::JwtUserGone => (StatusCode::UNAUTHORIZED, "Authenticated user does not exist. Has the account been deleted?"),
+			ApiError::OpenIdTokenExchangeFail(err) => {
+				warn!("Failed to exchange from IdP: {err}");
+				(StatusCode::BAD_REQUEST, "Failed to exchange token with authentication provider. Please make sure to not edit the URL. Please try again.")
+			},
+			ApiError::OpenIdUserinfoFail(err) => {
+				warn!("Failed to get userinfo from IdP: {err}");
+				(StatusCode::INTERNAL_SERVER_ERROR, "Failed to aquire userinfo from authentication provider. Try again later.")
+			}
         };
 
         (

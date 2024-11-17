@@ -150,10 +150,7 @@ impl OpenId {
         })
     }
 
-    pub async fn exchange(
-        self,
-        code: String,
-    ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn exchange(self, code: String) -> Result<String, reqwest::Error> {
         let request = reqwest::Client::new()
             .post(self.token)
             .header(USER_AGENT, "Iceblink")
@@ -172,10 +169,7 @@ impl OpenId {
         Ok(response.access_token)
     }
 
-    pub async fn userinfo(
-        self,
-        token: String,
-    ) -> Result<OpenIdUserInfo, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn userinfo(self, token: String) -> Result<OpenIdUserInfo, reqwest::Error> {
         let request = reqwest::Client::new()
             .get(self.userinfo)
             .header(USER_AGENT, "Iceblink")
