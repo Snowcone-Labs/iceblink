@@ -1,13 +1,13 @@
 use crate::{
     models::{self, user::User},
+    routes::v1::ApiError,
     AppState,
 };
 use axum::{
     extract::{Request, State},
-    http::{header, StatusCode},
+    http::header,
     middleware::Next,
     response::IntoResponse,
-    Json,
 };
 use axum_extra::extract::cookie::{Cookie, CookieJar, SameSite};
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
@@ -53,17 +53,12 @@ pub async fn create_jwt(user: &User, secret: String) -> (String, Cookie) {
     (jwt, cookie)
 }
 
-#[derive(Debug, Serialize)]
-pub struct JwtMiddlewareError {
-    pub message: String,
-}
-
 pub async fn jwt_middleware(
     cookie_jar: CookieJar,
     State(data): State<Arc<AppState>>,
     mut req: Request,
     next: Next,
-) -> Result<impl IntoResponse, (StatusCode, Json<JwtMiddlewareError>)> {
+) -> Result<impl IntoResponse, ApiError> {
     let token = cookie_jar
         .get("iceblink_jwt")
         .map(|cookie| cookie.value().to_string())
@@ -75,47 +70,17 @@ pub async fn jwt_middleware(
                 .map(|auth_value_inner| auth_value_inner.to_string())
         });
 
-    let token = token.ok_or_else(|| {
-        (
-            StatusCode::UNAUTHORIZED,
-            Json(JwtMiddlewareError {
-                message: "No JWT found".to_string(),
-            }),
-        )
-    })?;
+    let token = token.ok_or(ApiError::MissingAuthentication)?;
 
     let claims = decode::<TokenClaims>(
         &token,
         &DecodingKey::from_secret(data.settings.jwt_secret.as_ref()),
         &Validation::default(),
-    )
-    .map_err(|_| {
-        let json_error = JwtMiddlewareError {
-            message: "Invalid token".to_string(),
-        };
-        (StatusCode::UNAUTHORIZED, Json(json_error))
-    })?
+    )?
     .claims;
 
-    let user = models::user::User::get_by_id(&data.db, claims.sub)
-        .await
-        .map_err(|e| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(JwtMiddlewareError {
-                    message: format!("Error fetching user from database: {}", e),
-                }),
-            )
-        })?;
-
-    let user = user.ok_or_else(|| {
-        (
-            StatusCode::UNAUTHORIZED,
-            Json(JwtMiddlewareError {
-                message: "The user belonging to this token no longer exists".to_string(),
-            }),
-        )
-    })?;
+    let user = models::user::User::get_by_id(&data.db, claims.sub).await?;
+    let user = user.ok_or(ApiError::JwtUserGone)?;
 
     req.extensions_mut().insert(user);
     Ok(next.run(req).await)
