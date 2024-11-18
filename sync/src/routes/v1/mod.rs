@@ -7,7 +7,7 @@ use tracing::warn;
 
 pub mod codes;
 pub mod index;
-pub mod user;
+pub mod users;
 
 #[derive(Serialize)]
 pub struct ApiErrorResponse {

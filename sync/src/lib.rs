@@ -82,13 +82,13 @@ pub fn configure_router(pool: &SqlitePool, opts: ServerOptions, openid: auth::Op
             routes::v1::codes::delete_code,
             routes::v1::codes::edit_code
         ))
-        .routes(routes!(routes::v1::user::delete_account))
+        .routes(routes!(routes::v1::users::delete_account))
         .layer(middleware::from_fn_with_state(
             state.clone(),
             auth::jwt_middleware,
         ))
         .routes(routes!(routes::v1::index::index))
-        .routes(routes!(routes::v1::user::oauth))
+        .routes(routes!(routes::v1::users::oauth))
         .with_state(state)
         .nest_service(
             "/",
