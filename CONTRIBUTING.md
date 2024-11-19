@@ -1,6 +1,10 @@
 # Contributing to IceBlink
 
-## Sync
+## App
+
+1. Move into the `app` folder
+
+## Sync server
 
 1. Move into `sync` folder
 2. Install a recent version of Rust using `rustup`

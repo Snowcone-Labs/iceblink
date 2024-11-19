@@ -1,0 +1,7 @@
+"area: app":
+  - changed-files:
+      - any-glob-to-any-file: "app/**"
+
+"area: sync":
+  - changed-files:
+      - any-glob-to-any-file: "sync/**"
