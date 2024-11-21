@@ -17,14 +17,14 @@ impl Code {
         pool: &SqlitePool,
         id: String,
         owner_id: String,
-    ) -> Result<Code, sqlx::error::Error> {
+    ) -> Result<Option<Code>, sqlx::error::Error> {
         sqlx::query_as!(
             Code,
             "SELECT * FROM codes WHERE id = ? AND owner_id = ?",
             id,
             owner_id
         )
-        .fetch_one(pool)
+        .fetch_optional(pool)
         .await
     }
 

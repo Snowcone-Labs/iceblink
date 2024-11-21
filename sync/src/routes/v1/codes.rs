@@ -91,6 +91,7 @@ pub async fn edit_code(
     Ok(Json(
         Code::get(&state.db, id, user.id)
             .await?
+            .ok_or(ApiError::NotFound)?
             .edit()
             .pool(&state.db)
             .maybe_content(payload.content)
@@ -120,6 +121,7 @@ pub async fn delete_code(
 ) -> Result<StatusCode, ApiError> {
     Code::get(&state.db, id, user.id)
         .await?
+        .ok_or(ApiError::NotFound)?
         .delete(&state.db)
         .await?;
 
