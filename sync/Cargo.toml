@@ -6,9 +6,9 @@ name = "iceblink-sync"
 version = "0.1.0"
 
 [dependencies]
-axum = {version = "0.7.7", features = ["macros"]}
-axum-extra = {version = "0.9.4", features = ["cookie"]}
-bon = "3.0.0"
+axum = {version = "0.7.9", features = ["macros"]}
+axum-extra = {version = "0.9.6", features = ["cookie"]}
+bon = "3.0.2"
 chrono = "0.4.38"
 clap = {version = "4.5.21", features = ["derive", "env"]}
 dotenvy = {version = "0.15.7"}
@@ -18,11 +18,11 @@ rand = "0.8.5"
 regex = "1.11.1"
 reqwest = {version = "0.12.9", features = ["json", "rustls-tls"], default-features = false}
 serde = {version = "1.0.215", features = ["derive"]}
-serde_json = "1.0.132"
+serde_json = "1.0.133"
 sqlx = {version = "0.8", features = ["chrono", "derive", "macros", "migrate", "runtime-tokio", "sqlite"]}
 tokio = {version = "1.41.1", features = ["full"]}
 tower = "0.5.1"
-tower-http = {version = "0.6.1", features = ["compression-full", "cors", "timeout", "trace"]}
+tower-http = {version = "0.6.2", features = ["compression-full", "cors", "timeout", "trace"]}
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
 utoipa = {version = "5.2.0", features = ["axum_extras"]}
