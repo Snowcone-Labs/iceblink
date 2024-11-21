@@ -14,6 +14,11 @@
 6. Setup the SQLite database with `sqlx database setup`
 7. Serve using `cargo run -- serve`
 
+If you receive errors mentioning cranelift, consider removing that segment from
+`sync/Cargo.toml`. The project is optimized for faster compiletime in dev, and
+faster runtime at release. Release builds made with `--release` will compile
+slower due to thjese runtime performance optimizations.
+
 ### Testing
 
 Tests can be run with `cargo test`. Unit tests test specific small pieces of
