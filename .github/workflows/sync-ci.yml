@@ -20,6 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: rustup toolchain install nightly --component rustfmt --profile minimal
+      - run: rustup default nightly
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: ./sync -> target

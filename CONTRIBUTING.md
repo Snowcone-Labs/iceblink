@@ -7,12 +7,13 @@
 ## Sync server
 
 1. Move into `sync` folder
-2. Install the Rust using `rustup`
-3. Install the sqlx CLI using `cargo install sqlx-cli` - this will take some time
-4. Copy `.env.example` to `.env`
-5. Update using values from an IdP of your choice
-6. Setup the SQLite database with `sqlx database setup`
-7. Serve using `cargo run -- serve`
+2. Install the Rust installation manager `rustup`
+3. Enable Rust nightly with `rustup default nightly`
+4. Install the sqlx CLI using `cargo install sqlx-cli` - this will take some time
+5. Copy `.env.example` to `.env`
+6. Update using values from an IdP of your choice
+7. Setup the SQLite database with `sqlx database setup`
+8. Serve using `cargo run -- serve`
 
 If you receive errors mentioning cranelift, consider removing that segment from
 `sync/Cargo.toml`. The project is optimized for faster compiletime in dev, and
