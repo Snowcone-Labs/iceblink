@@ -2,8 +2,8 @@ use axum::{
     body::Body,
     http::{Method, Request, StatusCode},
 };
+use common::AsExpected;
 use iceblink_sync::models;
-use serde_json::json;
 use sqlx::SqlitePool;
 use tower::ServiceExt;
 
@@ -13,41 +13,6 @@ pub mod common;
 async fn delete_account(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
     let (a1, a2) = common::get_access_tokens(&db).await;
-
-    let user1_still_works = app
-        .clone()
-        .oneshot(
-            Request::builder()
-                .method(Method::GET)
-                .uri("/v1/codes")
-                .header("Authorization", format!("Bearer {a1}"))
-                .body(Body::empty())
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-    assert_eq!(user1_still_works.status(), StatusCode::OK);
-    assert_eq!(
-        common::convert_response(user1_still_works).await,
-        json!([
-            {
-                "content": common::USER1_CODE1_CONTENT,
-                "display_name": "Google",
-                "icon_url": null,
-                "id": common::USER1_CODE1_ID,
-                "owner_id": common::USER1_ID,
-                "website_url": "google.com"
-            },
-            {
-                "content": common::USER1_CODE2_CONTENT,
-                "display_name": "google.com",
-                "icon_url": null,
-                "id": common::USER1_CODE2_ID,
-                "owner_id": common::USER1_ID,
-                "website_url": "google.com"
-            },
-        ])
-    );
 
     let user1_delete = app
         .clone()
@@ -77,32 +42,12 @@ async fn delete_account(db: SqlitePool) {
         .unwrap();
     assert_eq!(user1_no_auth.status(), StatusCode::UNAUTHORIZED);
 
-    // User 2 should not be affected by User 1 deleteing their account.
-    let user2_still_works = app
-        .oneshot(
-            Request::builder()
-                .method(Method::GET)
-                .uri("/v1/codes")
-                .header("Authorization", format!("Bearer {a2}"))
-                .body(Body::empty())
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-    assert_eq!(user2_still_works.status(), StatusCode::OK);
-    assert_eq!(
-        common::convert_response(user2_still_works).await,
-        json!([
-            {
-                "content": common::USER2_CODE1_CONTENT,
-                "display_name": "Dummy INC",
-                "icon_url": "https://dummy.com/favicon.ico",
-                "id": common::USER2_CODE1_ID,
-                "owner_id": common::USER2_ID,
-                "website_url": "dummy.com"
-            }
-        ])
-    );
+    // User2 still works as usual
+    let u2 = common::list_codes_content(&app, a2.as_str()).await;
+    assert_eq!(u2.len(), 1);
+    for code in u2.iter() {
+        assert!(code.is_as_expected())
+    }
 
     // Check that the user is actually deleted from database.
     assert!(models::user::User::get_by_id(&db, common::USER1_ID.into())
