@@ -1,11 +1,18 @@
-use std::usize;
+// https://docs.rs/sqlx/latest/sqlx/attr.test.html
 
-use axum::{response::Response, Router};
+use axum::{
+    body::Body,
+    http::{Method, Request},
+    response::Response,
+    Router,
+};
 use iceblink_sync::{
     auth::{self, OpenId},
-    configure_router, ServerOptions,
+    configure_router, models, ServerOptions,
 };
 use sqlx::SqlitePool;
+use std::usize;
+use tower::ServiceExt;
 
 pub const USER1_ID: &str = "k0d8WrkRjK6gkc3C";
 pub const USER2_ID: &str = "3Ck0d8WrkRjK6gkc";
@@ -67,4 +74,53 @@ pub async fn convert_response(response: Response) -> serde_json::Value {
     .unwrap()
 }
 
-// https://docs.rs/sqlx/latest/sqlx/attr.test.html
+pub async fn list_codes(app: &Router, token: &str) -> Response {
+    app.clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri("/v1/codes")
+                .header("Authorization", format!("Bearer {token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap()
+}
+
+pub async fn list_codes_content(app: &Router, token: &str) -> Vec<models::codes::Code> {
+    serde_json::from_value(convert_response(list_codes(app, token).await).await).unwrap()
+}
+
+pub trait AsExpected {
+    fn is_as_expected(&self) -> bool;
+}
+
+impl AsExpected for models::codes::Code {
+    fn is_as_expected(&self) -> bool {
+        match self.id.as_str() {
+            USER1_CODE1_ID => {
+                self.content == USER1_CODE1_CONTENT
+                    && self.display_name == "Google"
+                    && self.icon_url == None
+                    && self.owner_id == USER1_ID
+                    && self.website_url == Some("google.com".to_string())
+            }
+            USER1_CODE2_ID => {
+                self.content == USER1_CODE2_CONTENT
+                    && self.display_name == "google.com"
+                    && self.icon_url == None
+                    && self.owner_id == USER1_ID
+                    && self.website_url == Some("google.com".to_string())
+            }
+            USER2_CODE1_ID => {
+                self.content == USER2_CODE1_CONTENT
+                    && self.display_name == "Dummy INC"
+                    && self.icon_url == Some("https://dummy.com/favicon.ico".to_string())
+                    && self.owner_id == USER2_ID
+                    && self.website_url == Some("dummy.com".to_string())
+            }
+            _ => false,
+        }
+    }
+}

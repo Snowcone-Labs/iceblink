@@ -2,6 +2,7 @@ use axum::{
     body::Body,
     http::{Method, Request, StatusCode},
 };
+use common::AsExpected;
 use iceblink_sync::models;
 use serde_json::json;
 use sqlx::SqlitePool;
@@ -14,68 +15,17 @@ async fn list_own_codes(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
     let (a1, a2) = common::get_access_tokens(&db).await;
 
-    let response_user1 = app
-        .clone()
-        .oneshot(
-            Request::builder()
-                .method(Method::GET)
-                .uri("/v1/codes")
-                .header("Authorization", format!("Bearer {a1}"))
-                .body(Body::empty())
-                .unwrap(),
-        )
-        .await
-        .unwrap();
+    let u1 = common::list_codes_content(&app, a1.as_str()).await;
+    assert_eq!(u1.len(), 2);
+    for code in u1.iter() {
+        assert!(code.is_as_expected())
+    }
 
-    assert_eq!(response_user1.status(), StatusCode::OK);
-    assert_eq!(
-        common::convert_response(response_user1).await,
-        json!([
-            {
-                "content": common::USER1_CODE1_CONTENT,
-                "display_name": "Google",
-                "icon_url": null,
-                "id": common::USER1_CODE1_ID,
-                "owner_id": common::USER1_ID,
-                "website_url": "google.com"
-            },
-            {
-                "content": common::USER1_CODE2_CONTENT,
-                "display_name": "google.com",
-                "icon_url": null,
-                "id": common::USER1_CODE2_ID,
-                "owner_id": common::USER1_ID,
-                "website_url": "google.com"
-            },
-        ])
-    );
-
-    let response_user2 = app
-        .oneshot(
-            Request::builder()
-                .method(Method::GET)
-                .uri("/v1/codes")
-                .header("Authorization", format!("Bearer {a2}"))
-                .body(Body::empty())
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-
-    assert_eq!(response_user2.status(), StatusCode::OK);
-    assert_eq!(
-        common::convert_response(response_user2).await,
-        json!([
-            {
-                "content": common::USER2_CODE1_CONTENT,
-                "display_name": "Dummy INC",
-                "icon_url": "https://dummy.com/favicon.ico",
-                "id": common::USER2_CODE1_ID,
-                "owner_id": common::USER2_ID,
-                "website_url": "dummy.com"
-            }
-        ])
-    );
+    let u2 = common::list_codes_content(&app, a2.as_str()).await;
+    assert_eq!(u2.len(), 1);
+    for code in u2.iter() {
+        assert!(code.is_as_expected())
+    }
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
@@ -115,18 +65,7 @@ async fn add_codes(db: SqlitePool) {
     assert_eq!(added_res.id.len(), 16);
 
     // Check that it was added to the list
-    let user1_after = app
-        .clone()
-        .oneshot(
-            Request::builder()
-                .method(Method::GET)
-                .uri("/v1/codes")
-                .header("Authorization", format!("Bearer {a1}"))
-                .body(Body::empty())
-                .unwrap(),
-        )
-        .await
-        .unwrap();
+    let user1_after = common::list_codes(&app, a1.as_str()).await;
 
     assert_eq!(user1_after.status(), StatusCode::OK);
     assert_eq!(
@@ -160,29 +99,9 @@ async fn add_codes(db: SqlitePool) {
     );
 
     // User 2 should not affected by the operation
-    let user2_codes = app
-        .oneshot(
-            Request::builder()
-                .method(Method::GET)
-                .uri("/v1/codes")
-                .header("Authorization", format!("Bearer {a2}"))
-                .body(Body::empty())
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-    assert_eq!(user2_codes.status(), StatusCode::OK);
-    assert_eq!(
-        common::convert_response(user2_codes).await,
-        json!([
-            {
-                "content": "djnaW1Pl2WjhWrU6",
-                "display_name": "Dummy INC",
-                "icon_url": "https://dummy.com/favicon.ico",
-                "id": "fUJveqJaNpPhTUkR",
-                "owner_id": common::USER2_ID,
-                "website_url": "dummy.com"
-            }
-        ])
-    );
+    let u2 = common::list_codes_content(&app, a2.as_str()).await;
+    assert_eq!(u2.len(), 1);
+    for code in u2.iter() {
+        assert!(code.is_as_expected())
+    }
 }
