@@ -102,7 +102,7 @@ pub fn configure_router(pool: &SqlitePool, opts: ServerOptions, openid: auth::Op
         )
         .split_for_parts();
     router
-        .merge(SwaggerUi::new("/docs").url("/openapi.json", api))
+        .merge(SwaggerUi::new("/swagger").url("/openapi.json", api))
         .layer(
             CorsLayer::new()
                 .allow_methods([Method::GET])

@@ -28,7 +28,7 @@ async fn delete_account(db: SqlitePool) {
         .unwrap();
     assert_eq!(user1_delete.status(), StatusCode::NO_CONTENT);
 
-    let user1_no_auth = app
+    let user1_codes_after_deleted = app
         .clone()
         .oneshot(
             Request::builder()
@@ -40,7 +40,7 @@ async fn delete_account(db: SqlitePool) {
         )
         .await
         .unwrap();
-    assert_eq!(user1_no_auth.status(), StatusCode::UNAUTHORIZED);
+    assert_eq!(user1_codes_after_deleted.status(), StatusCode::UNAUTHORIZED);
 
     // User2 still works as usual
     let u2 = common::list_codes_content(&app, a2.as_str()).await;

@@ -20,6 +20,9 @@ If you receive errors mentioning cranelift, consider removing that segment from
 faster runtime at release. Release builds made with `--release` will compile
 slower due to thjese runtime performance optimizations.
 
+An OpenAPI Swagger UI is available at `/swagger` with the OpenAPI spec at
+`/openapi.json`.
+
 ### Testing
 
 Tests can be run with `cargo test`. Unit tests test specific small pieces of
