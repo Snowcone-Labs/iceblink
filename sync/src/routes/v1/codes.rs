@@ -14,7 +14,7 @@ use utoipa::ToSchema;
 
 #[utoipa::path(
 	method(get),
-	path = "/v1/codes",
+	path = "/v1/code",
 	responses(
 		(status = OK, description = "Success", body = Vec<Code>)
 	),
@@ -40,7 +40,7 @@ pub struct CodeAddPayload {
 
 #[utoipa::path(
 	method(put),
-	path = "/v1/codes",
+	path = "/v1/code",
 	responses(
 		(status = OK, description = "Success", body = Code)
 	),

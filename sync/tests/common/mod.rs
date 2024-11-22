@@ -79,7 +79,7 @@ pub async fn list_codes(app: &Router, token: &str) -> Response {
         .oneshot(
             Request::builder()
                 .method(Method::GET)
-                .uri("/v1/codes")
+                .uri("/v1/code")
                 .header("Authorization", format!("Bearer {token}"))
                 .body(Body::empty())
                 .unwrap(),

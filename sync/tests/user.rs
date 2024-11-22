@@ -33,7 +33,7 @@ async fn delete_account(db: SqlitePool) {
         .oneshot(
             Request::builder()
                 .method(Method::GET)
-                .uri("/v1/codes")
+                .uri("/v1/code")
                 .header("Authorization", format!("Bearer {a1}"))
                 .body(Body::empty())
                 .unwrap(),

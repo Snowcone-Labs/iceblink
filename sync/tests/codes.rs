@@ -39,7 +39,7 @@ async fn add_codes(db: SqlitePool) {
         .oneshot(
             Request::builder()
                 .method(Method::PUT)
-                .uri("/v1/codes")
+                .uri("/v1/code")
                 .header("Authorization", format!("Bearer {a1}"))
                 .header("Content-Type", "application/json")
                 .body(Body::from(
