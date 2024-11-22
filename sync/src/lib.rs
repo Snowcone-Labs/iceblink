@@ -121,7 +121,14 @@ pub fn configure_router(pool: &SqlitePool, opts: ServerOptions, openid: auth::Op
                 .allow_credentials(true)
                 .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE]),
         )
-        .layer(CompressionLayer::new())
+        .layer(
+            CompressionLayer::new()
+                .br(true)
+                .deflate(true)
+                .gzip(true)
+                .zstd(true)
+                .quality(tower_http::CompressionLevel::Fastest),
+        )
         .layer(
             TraceLayer::new_for_http().on_request(|request: &Request<_>, _span: &Span| {
                 info!("{} {}", request.method(), request.uri().path())
