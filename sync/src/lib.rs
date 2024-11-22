@@ -4,7 +4,7 @@ pub mod models;
 pub mod routes;
 pub mod utils;
 
-use axum::http::{Method, Request};
+use axum::http::{header, HeaderValue, Method, Request};
 use axum::{middleware, Router};
 use memory_serve::{load_assets, MemoryServe};
 use sqlx::sqlite::SqliteConnectOptions;
@@ -30,6 +30,7 @@ pub struct ServerOptions {
     pub client_secret: String,
     pub oauth_server: String,
     pub redirect_uri: String,
+    pub frontfacing: String,
 }
 
 #[derive(Clone)]
@@ -105,8 +106,20 @@ pub fn configure_router(pool: &SqlitePool, opts: ServerOptions, openid: auth::Op
         .merge(SwaggerUi::new("/swagger").url("/openapi.json", api))
         .layer(
             CorsLayer::new()
-                .allow_methods([Method::GET])
-                .allow_origin(tower_http::cors::Any),
+                .allow_methods([
+                    Method::GET,
+                    Method::POST,
+                    Method::PUT,
+                    Method::DELETE,
+                    Method::PATCH,
+                ])
+                .allow_origin(
+                    opts.frontfacing
+                        .parse::<HeaderValue>()
+                        .expect("Unable to parse frontfacing URL for CORS"),
+                )
+                .allow_credentials(true)
+                .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE]),
         )
         .layer(CompressionLayer::new())
         .layer(

@@ -40,6 +40,7 @@ pub async fn testing_setup(pool: &SqlitePool) -> Router {
             client_secret: "N/A".into(),
             oauth_server: "N/A".into(),
             redirect_uri: "N/A".into(),
+            frontfacing: "N/A".into(),
         })
         .call()
 }

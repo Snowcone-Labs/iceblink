@@ -20,6 +20,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             oauth_server,
             jwt_secret,
             redirect_uri,
+            frontfacing,
         } => {
             info!("Iceblink Sync Server");
 
@@ -32,6 +33,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     .unwrap_or("https://pfapi.snowflake.blue".to_string()),
                 redirect_uri: redirect_uri.to_string(),
                 jwt_secret: jwt_secret.to_string(),
+                frontfacing: frontfacing
+                    .clone()
+                    .unwrap_or("http://localhost:8085".to_string()),
             })
             .await;
         }

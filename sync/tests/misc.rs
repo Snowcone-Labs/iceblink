@@ -97,3 +97,42 @@ async fn openapi_spec(db: SqlitePool) {
     // check that it can parse
     common::convert_response(response).await;
 }
+
+#[sqlx::test]
+async fn cors_headers(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::OPTIONS)
+                .uri("/v1")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(
+        response
+            .headers()
+            .get("Access-Control-Allow-Origin")
+            .unwrap(),
+        "N/A"
+    );
+    assert_eq!(
+        response
+            .headers()
+            .get("Access-Control-Allow-Headers")
+            .unwrap(),
+        "authorization,content-type"
+    );
+    assert_eq!(
+        response
+            .headers()
+            .get("Access-Control-Allow-Credentials")
+            .unwrap(),
+        "true"
+    );
+}
