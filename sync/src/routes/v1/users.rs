@@ -42,14 +42,14 @@ pub async fn oauth(
         .clone()
         .exchange(code.clone())
         .await
-        .map_err(|err| ApiError::OpenIdTokenExchangeFail(err))?;
+        .map_err(ApiError::OpenIdTokenExchangeFail)?;
 
     let userinfo = state
         .openid
         .clone()
         .userinfo(access_token)
         .await
-        .map_err(|err| ApiError::OpenIdUserinfoFail(err))?;
+        .map_err(ApiError::OpenIdUserinfoFail)?;
 
     let user_query = models::user::User::get_by_upstream_id(&state.db, userinfo.clone().id).await?;
 

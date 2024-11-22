@@ -175,8 +175,6 @@ impl OpenId {
             .header(USER_AGENT, "Iceblink")
             .bearer_auth(token);
 
-        let response = request.send().await?;
-
-        Ok(response.json::<OpenIdUserInfo>().await?)
+        request.send().await?.json::<OpenIdUserInfo>().await
     }
 }
