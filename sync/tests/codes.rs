@@ -136,7 +136,7 @@ async fn delete_code_not_found(db: SqlitePool) {
         common::convert_response(deletion_request).await,
         json!({
             "message": "Resource not found.",
-            "type": "NotFound"
+            "errorKind": "NotFound"
         })
     );
 
@@ -159,7 +159,7 @@ async fn delete_code_other_user(db: SqlitePool) {
         common::convert_response(deletion_request).await,
         json!({
             "message": "Resource not found.",
-            "type": "NotFound"
+            "errorKind": "NotFound"
         })
     );
 

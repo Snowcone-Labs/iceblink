@@ -25,7 +25,7 @@ pub fn list_codes_no_header(db: SqlitePool) {
         common::convert_response(response).await,
         json!({
             "message": "Missing authentication. Supply a JWT in the `iceblink_jwt` cookie, or use a bearer in the `Authorization` header.",
-            "type": "MissingAuthentication"
+            "errorKind": "MissingAuthentication"
         })
     );
 }
@@ -51,7 +51,7 @@ pub fn list_codes_empty_header(db: SqlitePool) {
         common::convert_response(response).await,
         json!({
             "message": "Missing authentication. Supply a JWT in the `iceblink_jwt` cookie, or use a bearer in the `Authorization` header.",
-            "type": "MissingAuthentication"
+            "errorKind": "MissingAuthentication"
         })
     );
 }
@@ -77,7 +77,7 @@ pub fn list_codes_empty_bearer(db: SqlitePool) {
         common::convert_response(response).await,
         json!({
             "message": "Missing authentication. Supply a JWT in the `iceblink_jwt` cookie, or use a bearer in the `Authorization` header.",
-            "type": "MissingAuthentication"
+            "errorKind": "MissingAuthentication"
         })
     );
 }
@@ -103,7 +103,7 @@ pub fn list_codes_garbage_bearer(db: SqlitePool) {
         common::convert_response(response).await,
         json!({
             "message": "The supplied authentication is invalid.",
-            "type": "InvalidAuthentication"
+            "errorKind": "InvalidAuthentication"
         })
     );
 }
@@ -129,7 +129,7 @@ pub fn list_codes_invalid_signature(db: SqlitePool) {
         common::convert_response(response).await,
         json!({
             "message": "The supplied authentication has an invalid signature. Try logging in again.",
-            "type": "InvalidJwtSignature"
+            "errorKind": "InvalidJwtSignature"
         })
     );
 }

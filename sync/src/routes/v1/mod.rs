@@ -12,8 +12,8 @@ pub mod users;
 #[derive(Serialize)]
 pub struct ApiErrorResponse {
     pub message: String,
-    #[serde(rename = "type")]
-    pub typ: String,
+    #[serde(rename = "errorKind")]
+    pub kind: String,
 }
 
 #[derive(Debug)]
@@ -60,7 +60,7 @@ impl IntoResponse for ApiError {
             status,
             Json(ApiErrorResponse {
                 message: message.to_string(),
-                typ: self.typ(),
+                kind: self.kind(),
             }),
         )
             .into_response()
@@ -76,7 +76,7 @@ impl fmt::Display for ApiError {
 
 // Stupid way to get enum name without contents
 impl ApiError {
-    fn typ(&self) -> String {
+    fn kind(&self) -> String {
         self.to_string()
             .split_once("(")
             .unwrap_or((self.to_string().as_str(), ""))
@@ -110,18 +110,23 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_get_typ_missing_authentication() {
+    fn test_get_kind_missing_authentication() {
         assert_eq!(
-            ApiError::MissingAuthentication.typ(),
+            ApiError::MissingAuthentication.kind(),
             "MissingAuthentication"
         );
     }
 
     #[test]
-    fn test_get_type_sqlx() {
+    fn test_get_kind_sqlx_misc() {
         assert_eq!(
-            ApiError::DatabaseError(sqlx::Error::ColumnNotFound("joe".to_string())).typ(),
+            ApiError::DatabaseError(sqlx::Error::ColumnNotFound("joe".to_string())).kind(),
             "DatabaseError"
         );
+    }
+
+    #[test]
+    fn test_get_kind_not_found_from_sqlx() {
+        assert_eq!(ApiError::from(sqlx::Error::RowNotFound).kind(), "NotFound");
     }
 }
