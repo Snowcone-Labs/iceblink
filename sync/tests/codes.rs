@@ -105,3 +105,68 @@ async fn add_codes(db: SqlitePool) {
         assert!(code.is_as_expected())
     }
 }
+
+//
+// Code deletion
+//
+
+#[sqlx::test(fixtures("users", "codes"))]
+async fn delete_code(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+    let (a1, _) = common::get_access_tokens(&db).await;
+
+    let deletion_request = common::delete_code(&app, a1.as_str(), common::USER1_CODE2_ID).await;
+    assert_eq!(deletion_request.status(), StatusCode::NO_CONTENT);
+
+    let codes_listing = common::list_codes_content(&app, a1.as_str()).await;
+    assert_eq!(codes_listing.len(), 1);
+    let code = codes_listing.get(0).unwrap();
+    assert_eq!(code.id, common::USER1_CODE1_ID);
+    assert!(code.is_as_expected());
+}
+
+#[sqlx::test(fixtures("users", "codes"))]
+async fn delete_code_not_found(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+    let (a1, _) = common::get_access_tokens(&db).await;
+
+    let deletion_request = common::delete_code(&app, a1.as_str(), "random-id").await;
+    assert_eq!(deletion_request.status(), StatusCode::NOT_FOUND);
+    assert_eq!(
+        common::convert_response(deletion_request).await,
+        json!({
+            "message": "Resource not found.",
+            "type": "NotFound"
+        })
+    );
+
+    // The user codes should not be affected
+    let user_codes = common::list_codes_content(&app, a1.as_str()).await;
+    assert_eq!(user_codes.len(), 2);
+    for code in user_codes.iter() {
+        assert!(code.is_as_expected())
+    }
+}
+
+#[sqlx::test(fixtures("users", "codes"))]
+async fn delete_code_other_user(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+    let (a1, a2) = common::get_access_tokens(&db).await;
+
+    let deletion_request = common::delete_code(&app, a1.as_str(), common::USER2_CODE1_ID).await;
+    assert_eq!(deletion_request.status(), StatusCode::NOT_FOUND);
+    assert_eq!(
+        common::convert_response(deletion_request).await,
+        json!({
+            "message": "Resource not found.",
+            "type": "NotFound"
+        })
+    );
+
+    // The victim should not be affected
+    let victim_codes = common::list_codes_content(&app, a2.as_str()).await;
+    assert_eq!(victim_codes.len(), 1);
+    for code in victim_codes.iter() {
+        assert!(code.is_as_expected())
+    }
+}

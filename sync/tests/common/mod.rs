@@ -92,6 +92,20 @@ pub async fn list_codes_content(app: &Router, token: &str) -> Vec<models::codes:
     serde_json::from_value(convert_response(list_codes(app, token).await).await).unwrap()
 }
 
+pub async fn delete_code(app: &Router, token: &str, id: &str) -> Response {
+    app.clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::DELETE)
+                .uri(format!("/v1/code/{id}"))
+                .header("Authorization", format!("Bearer {token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap()
+}
+
 pub trait AsExpected {
     fn is_as_expected(&self) -> bool;
 }
