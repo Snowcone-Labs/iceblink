@@ -9,7 +9,7 @@ use tower::ServiceExt;
 pub mod common;
 
 #[sqlx::test]
-async fn index(db: SqlitePool) {
+async fn api_metadata(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
 
     let response = app
@@ -32,6 +32,29 @@ async fn index(db: SqlitePool) {
             "client_id": "N/A",
             "redirect_uri": "N/A",
         })
+    );
+}
+
+#[sqlx::test]
+async fn landing_page(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri("/")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/html");
+    assert_eq!(
+        response.headers().get("Cache-Control").unwrap(),
+        "max-age=31536000, immutable"
     );
 }
 
