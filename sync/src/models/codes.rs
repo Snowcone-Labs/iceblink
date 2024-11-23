@@ -102,7 +102,7 @@ impl Code {
 
         if let Some(website_url_inner) = website_url {
             sqlx::query!(
-                "UPDATE codes SET website_url = $2 AND icon_url = NULL WHERE id = $1",
+                "UPDATE codes SET website_url = $2, icon_url = NULL WHERE id = $1",
                 self.id,
                 website_url_inner
             )
