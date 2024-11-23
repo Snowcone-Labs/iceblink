@@ -107,6 +107,26 @@ pub async fn delete_code(app: &Router, token: &str, id: &str) -> Response {
         .unwrap()
 }
 
+pub async fn edit_code(
+    app: &Router,
+    token: &str,
+    id: &str,
+    payload: &serde_json::Value,
+) -> Response {
+    app.clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!("/v1/code/{id}"))
+                .header("Authorization", format!("Bearer {token}"))
+                .header("Content-Type", "application/json")
+                .body(Body::from(serde_json::to_vec(payload).unwrap()))
+                .unwrap(),
+        )
+        .await
+        .unwrap()
+}
+
 pub trait AsExpected {
     fn is_as_expected(&self) -> bool;
 }

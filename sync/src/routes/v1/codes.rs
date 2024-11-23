@@ -68,7 +68,12 @@ pub async fn add_code(
 pub struct CodeEditPayload {
     pub content: Option<String>,
     pub display_name: Option<String>,
-    pub website_url: Option<String>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "::serde_with::rust::double_option"
+    )]
+    pub website_url: Option<Option<String>>,
 }
 
 #[utoipa::path(

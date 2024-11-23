@@ -59,8 +59,8 @@ impl Code {
         pool: &SqlitePool,
         content: Option<String>,
         display_name: Option<String>,
-        icon_url: Option<String>,
-        website_url: Option<String>,
+        icon_url: Option<Option<String>>,
+        website_url: Option<Option<String>>,
     ) -> Result<&Code, sqlx::error::Error> {
         let mut tx = pool.begin().await?;
 
@@ -97,7 +97,7 @@ impl Code {
             .execute(&mut *tx)
             .await?;
 
-            self.icon_url = Some(icon_url_inner);
+            self.icon_url = icon_url_inner;
         }
 
         if let Some(website_url_inner) = website_url {
@@ -109,7 +109,7 @@ impl Code {
             .execute(&mut *tx)
             .await?;
 
-            self.website_url = Some(website_url_inner);
+            self.website_url = website_url_inner;
         };
 
         tx.commit().await?;

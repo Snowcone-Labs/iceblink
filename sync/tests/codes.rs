@@ -107,6 +107,55 @@ async fn add_codes(db: SqlitePool) {
 }
 
 //
+// Code edit
+//
+
+#[sqlx::test(fixtures("users", "codes"))]
+async fn edit_code_remove_website(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+    let (a1, _) = common::get_access_tokens(&db).await;
+
+    let edit_request = common::edit_code(
+        &app,
+        a1.as_str(),
+        common::USER1_CODE2_ID,
+        &json!({
+            "website_url": null
+        }),
+    )
+    .await;
+
+    // Returns updated code
+    assert_eq!(edit_request.status(), StatusCode::OK);
+    assert_eq!(
+        common::convert_response(edit_request).await,
+        json!({
+            "content": common::USER1_CODE2_CONTENT,
+            "id": common::USER1_CODE2_ID,
+            "owner_id": common::USER1_ID,
+            "display_name": "google.com",
+            "icon_url": null,
+            "website_url": null
+        })
+    );
+
+    // The code is editted in the listing
+    let listing_request = common::list_codes_content(&app, a1.as_str()).await;
+    assert_eq!(listing_request.len(), 2);
+    for code in listing_request.iter() {
+        assert!(
+            code.is_as_expected()
+                || (code.id == common::USER1_CODE2_ID
+                    && code.website_url == None
+                    && code.icon_url == None
+                    && code.content == common::USER1_CODE2_CONTENT
+                    && code.owner_id == common::USER1_ID
+                    && code.display_name == "google.com")
+        )
+    }
+}
+
+//
 // Code deletion
 //
 
