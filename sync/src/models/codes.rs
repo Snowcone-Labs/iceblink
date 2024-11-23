@@ -102,7 +102,7 @@ impl Code {
 
         if let Some(website_url_inner) = website_url {
             sqlx::query!(
-                "UPDATE codes SET website_url = $2 WHERE id = $1",
+                "UPDATE codes SET website_url = $2 AND icon_url = NULL WHERE id = $1",
                 self.id,
                 website_url_inner
             )
@@ -110,6 +110,7 @@ impl Code {
             .await?;
 
             self.website_url = website_url_inner;
+            self.icon_url = None;
         };
 
         tx.commit().await?;

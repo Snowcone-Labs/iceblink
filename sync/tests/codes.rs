@@ -155,6 +155,35 @@ async fn edit_code_remove_website(db: SqlitePool) {
     }
 }
 
+#[sqlx::test(fixtures("users", "codes"))]
+async fn edit_code_update_website_removes_icon(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+    let (_, a2) = common::get_access_tokens(&db).await;
+
+    let edit_request = common::edit_code(
+        &app,
+        a2.as_str(),
+        common::USER2_CODE1_ID,
+        &json!({
+            "website_url": "example.com"
+        }),
+    )
+    .await;
+
+    assert_eq!(edit_request.status(), StatusCode::OK);
+    assert_eq!(
+        common::convert_response(edit_request).await,
+        json!({
+            "content": common::USER2_CODE1_CONTENT,
+            "id": common::USER2_CODE1_ID,
+            "owner_id": common::USER2_ID,
+            "display_name": "Dummy INC",
+            "icon_url": null,
+            "website_url": "example.com"
+        })
+    );
+}
+
 //
 // Code deletion
 //
