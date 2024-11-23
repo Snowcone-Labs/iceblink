@@ -182,6 +182,114 @@ async fn edit_code_update_website_removes_icon(db: SqlitePool) {
             "website_url": "example.com"
         })
     );
+
+    // The code is editted in the listing
+    let listing_request = common::list_codes_content(&app, a2.as_str()).await;
+    assert_eq!(listing_request.len(), 1);
+    let code = listing_request.get(0).unwrap();
+    assert_eq!(code.id, common::USER2_CODE1_ID);
+    assert_eq!(code.website_url, Some("example.com".to_string()));
+    assert_eq!(code.icon_url, None);
+    assert_eq!(code.content, common::USER2_CODE1_CONTENT);
+    assert_eq!(code.owner_id, common::USER2_ID);
+    assert_eq!(code.display_name, "Dummy INC");
+}
+
+#[sqlx::test(fixtures("users", "codes"))]
+async fn edit_code_not_found(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+    let (a1, _) = common::get_access_tokens(&db).await;
+
+    let edit_request = common::edit_code(
+        &app,
+        a1.as_str(),
+        "gibberish",
+        &json!({
+            "website_url": "example.com"
+        }),
+    )
+    .await;
+
+    assert_eq!(edit_request.status(), StatusCode::NOT_FOUND);
+    assert_eq!(
+        common::convert_response(edit_request).await,
+        json!({
+            "message": "Resource not found.",
+            "errorKind": "NotFound"
+        })
+    );
+}
+
+#[sqlx::test(fixtures("users", "codes"))]
+async fn edit_code_other_user(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+    let (a1, a2) = common::get_access_tokens(&db).await;
+
+    let edit_request = common::edit_code(
+        &app,
+        a1.as_str(),
+        common::USER2_CODE1_ID,
+        &json!({
+            "display_name": "Hacked."
+        }),
+    )
+    .await;
+
+    assert_eq!(edit_request.status(), StatusCode::NOT_FOUND);
+    assert_eq!(
+        common::convert_response(edit_request).await,
+        json!({
+            "message": "Resource not found.",
+            "errorKind": "NotFound"
+        })
+    );
+
+    // Check that it did indeed not happen
+    let u2 = common::list_codes_content(&app, a2.as_str()).await;
+    assert_eq!(u2.len(), 1);
+    for code in u2.iter() {
+        assert!(code.is_as_expected())
+    }
+}
+
+#[sqlx::test(fixtures("users", "codes"))]
+async fn edit_code_other_user_no_auth(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+    let (_, a2) = common::get_access_tokens(&db).await;
+
+    let edit_request = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!("/v1/code/{}", common::USER2_CODE1_ID))
+                .header("Content-Type", "application/json")
+                .body(Body::from(
+                    serde_json::to_vec(&json!({
+                        "display_name": "hacked"
+                    }))
+                    .unwrap(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(edit_request.status(), StatusCode::UNAUTHORIZED);
+    assert_eq!(
+        common::convert_response(edit_request).await,
+        json!({
+            "message": "Missing authentication. Supply a JWT in the `iceblink_jwt` cookie, or use a bearer in the `Authorization` header.",
+            "errorKind": "MissingAuthentication"
+        })
+    );
+
+    // Check that it did indeed not happen
+    let u2 = common::list_codes_content(&app, a2.as_str()).await;
+    assert_eq!(u2.len(), 1);
+    for code in u2.iter() {
+        assert!(code.is_as_expected())
+    }
 }
 
 //
