@@ -142,17 +142,21 @@ async fn edit_code_remove_website(db: SqlitePool) {
     // The code is editted in the listing
     let listing_request = common::list_codes_content(&app, a1.as_str()).await;
     assert_eq!(listing_request.len(), 2);
-    for code in listing_request.iter() {
-        assert!(
-            code.is_as_expected()
-                || (code.id == common::USER1_CODE2_ID
-                    && code.website_url == None
-                    && code.icon_url == None
-                    && code.content == common::USER1_CODE2_CONTENT
-                    && code.owner_id == common::USER1_ID
-                    && code.display_name == "google.com")
-        )
-    }
+    let unmodified_code = listing_request
+        .iter()
+        .find(|v| v.id == common::USER1_CODE1_ID)
+        .unwrap();
+    assert!(unmodified_code.is_as_expected());
+    let modified_code = listing_request
+        .iter()
+        .find(|v| v.id == common::USER1_CODE2_ID)
+        .unwrap();
+    assert_eq!(modified_code.id, common::USER1_CODE2_ID);
+    assert_eq!(modified_code.website_url, None);
+    assert_eq!(modified_code.icon_url, None);
+    assert_eq!(modified_code.content, common::USER1_CODE2_CONTENT);
+    assert_eq!(modified_code.owner_id, common::USER1_ID);
+    assert_eq!(modified_code.display_name, "google.com");
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
@@ -193,6 +197,56 @@ async fn edit_code_update_website_removes_icon(db: SqlitePool) {
     assert_eq!(code.content, common::USER2_CODE1_CONTENT);
     assert_eq!(code.owner_id, common::USER2_ID);
     assert_eq!(code.display_name, "Dummy INC");
+}
+
+#[sqlx::test(fixtures("users", "codes"))]
+async fn edit_code_content_and_display_name(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+    let (a1, _) = common::get_access_tokens(&db).await;
+
+    let edit_request = common::edit_code(
+        &app,
+        a1.as_str(),
+        common::USER1_CODE2_ID,
+        &json!({
+            "content": "yippie",
+            "display_name": "Modrinth"
+        }),
+    )
+    .await;
+
+    // Returns updated code
+    assert_eq!(edit_request.status(), StatusCode::OK);
+    assert_eq!(
+        common::convert_response(edit_request).await,
+        json!({
+            "content": "yippie",
+            "id": common::USER1_CODE2_ID,
+            "owner_id": common::USER1_ID,
+            "display_name": "Modrinth",
+            "icon_url": null,
+            "website_url": "google.com"
+        })
+    );
+
+    // The code is editted in the listing
+    let listing_request = common::list_codes_content(&app, a1.as_str()).await;
+    assert_eq!(listing_request.len(), 2);
+    let unmodified_code = listing_request
+        .iter()
+        .find(|v| v.id == common::USER1_CODE1_ID)
+        .unwrap();
+    assert!(unmodified_code.is_as_expected());
+    let modified_code = listing_request
+        .iter()
+        .find(|v| v.id == common::USER1_CODE2_ID)
+        .unwrap();
+    assert_eq!(modified_code.id, common::USER1_CODE2_ID);
+    assert_eq!(modified_code.website_url, Some("google.com".to_string()));
+    assert_eq!(modified_code.icon_url, None);
+    assert_eq!(modified_code.content, "yippie");
+    assert_eq!(modified_code.owner_id, common::USER1_ID);
+    assert_eq!(modified_code.display_name, "Modrinth");
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
