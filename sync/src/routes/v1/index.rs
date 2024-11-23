@@ -13,14 +13,15 @@ pub struct IceblinkInstanceMetadata {
 }
 
 #[utoipa::path(
-	method(get),
+	get,
 	path = "/v1/",
 	responses(
-		(status = OK, description = "Success", body = IceblinkInstanceMetadata)
+		(status = OK, description = "Successfully fetched instance metadata", body = IceblinkInstanceMetadata)
 	),
-	tag = "misc"
+	tag = "misc",
+	security(())
 )]
-pub async fn index(
+pub async fn instance_metadata(
     State(data): State<Arc<AppState>>,
 ) -> (StatusCode, Json<IceblinkInstanceMetadata>) {
     (

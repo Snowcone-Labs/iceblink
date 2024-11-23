@@ -13,12 +13,12 @@ use std::sync::Arc;
 use utoipa::ToSchema;
 
 #[utoipa::path(
-	method(get),
+	get,
 	path = "/v1/code",
 	responses(
-		(status = OK, description = "Success", body = Vec<Code>)
+		(status = OK, description = "Successfully fetches codes", body = Vec<Code>)
 	),
-	tag = "codes"
+	tag = "codes",
 )]
 pub async fn list_all_codes(
     State(state): State<Arc<AppState>>,
@@ -42,8 +42,9 @@ pub struct CodeAddPayload {
 	method(put),
 	path = "/v1/code",
 	responses(
-		(status = OK, description = "Success", body = Code)
+		(status = OK, description = "Succesfully created code. Response contains contents of the new code", body = Code)
 	),
+	request_body = CodeAddPayload,
 	tag = "codes"
 )]
 pub async fn add_code(
@@ -80,12 +81,13 @@ pub struct CodeEditPayload {
 	method(patch),
 	path = "/v1/code/{id}",
 	tag = "codes",
+	params(
+		("id", description = "Id of the code to edit")
+	),
+	request_body = CodeEditPayload,
 	responses(
 		(status = OK, description = "Success", body = Vec<Code>)
 	),
-	params(
-		("id", description = "Code ID")
-	)
 )]
 pub async fn edit_code(
     State(state): State<Arc<AppState>>,
@@ -116,7 +118,7 @@ pub async fn edit_code(
 		(status = NO_CONTENT, description = "Deleted")
 	),
 	params(
-		("id", description = "Code ID")
+		("id", description = "Id of code to delete")
 	)
 )]
 pub async fn delete_code(

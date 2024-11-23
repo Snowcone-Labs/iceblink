@@ -28,7 +28,8 @@ pub struct OauthQueryParams {
 	),
 	params(
 		OauthQueryParams
-	)
+	),
+	security(())
 )]
 pub async fn oauth(
     State(state): State<Arc<AppState>>,
