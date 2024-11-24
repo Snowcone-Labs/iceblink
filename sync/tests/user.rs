@@ -4,6 +4,7 @@ use axum::{
 };
 use common::AsExpected;
 use iceblink_sync::models;
+use serde_json::json;
 use sqlx::SqlitePool;
 use tower::ServiceExt;
 
@@ -62,4 +63,121 @@ async fn delete_account(db: SqlitePool) {
             .unwrap()
             .is_none(),
     );
+}
+
+#[sqlx::test(fixtures("users", "codes"))]
+async fn checksum_two_requests_equal(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+    let (a1, _) = common::get_access_tokens(&db).await;
+
+    let checksum1 = common::user_checksum(&app, a1.as_str()).await;
+    let checksum2 = common::user_checksum(&app, a1.as_str()).await;
+    assert_eq!(checksum1, checksum2);
+}
+
+#[sqlx::test(fixtures("users", "codes"))]
+async fn checksum_changes_code_name(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+    let (a1, _) = common::get_access_tokens(&db).await;
+
+    let checksum1 = common::user_checksum(&app, a1.as_str()).await;
+    common::edit_code(
+        &app,
+        &a1,
+        common::USER1_CODE1_ID,
+        &json!({
+            "display_name": "not sure honestly"
+        }),
+    )
+    .await;
+    let checksum2 = common::user_checksum(&app, a1.as_str()).await;
+    assert_ne!(checksum1, checksum2);
+}
+
+#[sqlx::test(fixtures("users", "codes"))]
+async fn checksum_changes_code_content(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+    let (a1, _) = common::get_access_tokens(&db).await;
+
+    let checksum1 = common::user_checksum(&app, a1.as_str()).await;
+    common::edit_code(
+        &app,
+        &a1,
+        common::USER1_CODE1_ID,
+        &json!({
+            "content": "not sure honestly"
+        }),
+    )
+    .await;
+    let checksum2 = common::user_checksum(&app, a1.as_str()).await;
+    assert_ne!(checksum1, checksum2);
+}
+
+#[sqlx::test(fixtures("users", "codes"))]
+async fn checksum_equal_edit_and_revert_content(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+    let (a1, _) = common::get_access_tokens(&db).await;
+
+    let checksum1 = common::user_checksum(&app, a1.as_str()).await;
+
+    common::edit_code(
+        &app,
+        &a1,
+        common::USER1_CODE1_ID,
+        &json!({
+            "content": "not sure honestly"
+        }),
+    )
+    .await;
+    common::edit_code(
+        &app,
+        &a1,
+        common::USER1_CODE1_ID,
+        &json!({
+            "content": common::USER1_CODE1_CONTENT
+        }),
+    )
+    .await;
+
+    let checksum2 = common::user_checksum(&app, a1.as_str()).await;
+    assert_eq!(checksum1, checksum2);
+}
+
+#[sqlx::test(fixtures("users", "codes"))]
+async fn checksum_changes_code_add(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+    let (a1, _) = common::get_access_tokens(&db).await;
+
+    let checksum1 = common::user_checksum(&app, a1.as_str()).await;
+    app.clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PUT)
+                .uri("/v1/code")
+                .header("Authorization", format!("Bearer {a1}"))
+                .header("Content-Type", "application/json")
+                .body(Body::from(
+                    serde_json::to_vec(&json!({
+                        "content": "garbage",
+                        "display_name": "Permafrost",
+                    }))
+                    .unwrap(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let checksum2 = common::user_checksum(&app, a1.as_str()).await;
+    assert_ne!(checksum1, checksum2);
+}
+
+#[sqlx::test(fixtures("users", "codes"))]
+async fn checksum_changes_code_delete(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+    let (a1, _) = common::get_access_tokens(&db).await;
+
+    let checksum1 = common::user_checksum(&app, a1.as_str()).await;
+    common::delete_code(&app, &a1, common::USER1_CODE1_ID).await;
+    let checksum2 = common::user_checksum(&app, a1.as_str()).await;
+    assert_ne!(checksum1, checksum2);
 }

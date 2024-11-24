@@ -1,16 +1,16 @@
 use super::ApiError;
 use crate::{
     auth,
-    models::{self, user::User},
+    models::{self, codes::Code, user::User},
     utils, AppState,
 };
 use axum::{
     extract::{Query, State},
     http::HeaderMap,
-    Extension,
+    Extension, Json,
 };
 use reqwest::{header, StatusCode};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use utoipa::IntoParams;
 
@@ -91,4 +91,29 @@ pub async fn delete_account(
 ) -> Result<StatusCode, ApiError> {
     user.delete(&state.db).await?;
     Ok(StatusCode::NO_CONTENT)
+}
+
+#[derive(Debug, Serialize, Deserialize, utoipa::ToSchema)]
+pub struct ChecksumResponse {
+    pub checksum: String,
+}
+
+#[utoipa::path(
+	get,
+	path = "/v1/user/checksum",
+	tag = "user",
+	responses(
+		(status = OK, description = "Successfully calculated checksum of user", body = ChecksumResponse)
+	),
+)]
+#[axum::debug_handler]
+pub async fn checksum(
+    State(state): State<Arc<AppState>>,
+    Extension(user): Extension<User>,
+) -> Result<Json<ChecksumResponse>, ApiError> {
+    let codes = Code::get_many(&state.db, user.clone().id).await?;
+
+    Ok(Json(ChecksumResponse {
+        checksum: utils::checksum(codes, &user),
+    }))
 }

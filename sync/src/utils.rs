@@ -1,7 +1,19 @@
 use rand::distributions::{Alphanumeric, DistString};
 
+use crate::models::{codes::Code, user::User};
+
 pub fn generate_id(len: usize) -> String {
     Alphanumeric.sample_string(&mut rand::thread_rng(), len)
+}
+
+pub fn checksum(codes: Vec<Code>, _user: &User) -> String {
+    let mut content = "".to_owned();
+
+    for code in codes {
+        content += &code.fmt_for_hasher()
+    }
+
+    crc32fast::hash(content.as_bytes()).to_string()
 }
 
 #[cfg(test)]

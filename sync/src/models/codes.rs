@@ -116,4 +116,14 @@ impl Code {
         tx.commit().await?;
         Ok(self)
     }
+
+    pub fn fmt_for_hasher(&self) -> String {
+        format!(
+            "{}{}{}{}",
+            self.content,
+            self.display_name,
+            self.icon_url.clone().unwrap_or("".to_string()),
+            self.website_url.clone().unwrap_or("".to_string())
+        )
+    }
 }

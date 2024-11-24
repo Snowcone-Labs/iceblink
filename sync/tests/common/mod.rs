@@ -8,7 +8,9 @@ use axum::{
 };
 use iceblink_sync::{
     auth::{self, OpenId},
-    configure_router, models, ServerOptions,
+    configure_router, models,
+    routes::v1::users::ChecksumResponse,
+    ServerOptions,
 };
 use sqlx::SqlitePool;
 use std::usize;
@@ -125,6 +127,24 @@ pub async fn edit_code(
         )
         .await
         .unwrap()
+}
+
+pub async fn user_checksum(app: &Router, token: &str) -> String {
+    let res = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(format!("/v1/user/checksum"))
+                .header("Authorization", format!("Bearer {token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    let parsed: ChecksumResponse = serde_json::from_value(convert_response(res).await).unwrap();
+    parsed.checksum
 }
 
 pub trait AsExpected {
