@@ -4,7 +4,7 @@ pub mod models;
 pub mod routes;
 pub mod utils;
 
-use axum::http::{header, HeaderValue, Method, Request};
+use axum::http::{header, HeaderValue, Method};
 use axum::{middleware, Router};
 use memory_serve::{load_assets, MemoryServe};
 use serde::Serialize;
@@ -17,7 +17,7 @@ use tower_http::compression::CompressionLayer;
 use tower_http::cors::CorsLayer;
 use tower_http::timeout::TimeoutLayer;
 use tower_http::trace::TraceLayer;
-use tracing::{info, Span};
+use tracing::info;
 use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder, SecurityScheme};
 use utoipa::{Modify, OpenApi};
 use utoipa_axum::router::OpenApiRouter;
@@ -164,11 +164,7 @@ pub fn configure_router(pool: &SqlitePool, opts: ServerOptions, openid: auth::Op
                 .zstd(true)
                 .quality(tower_http::CompressionLevel::Fastest),
         )
-        .layer(
-            TraceLayer::new_for_http().on_request(|request: &Request<_>, _span: &Span| {
-                info!("{} {}", request.method(), request.uri().path())
-            }),
-        )
+        .layer(TraceLayer::new_for_http())
         .layer(TimeoutLayer::new(Duration::from_secs(2)))
 }
 

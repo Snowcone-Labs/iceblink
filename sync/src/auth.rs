@@ -135,7 +135,7 @@ impl OpenId {
         client_id: String,
         client_secret: String,
         server: String,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    ) -> Result<Self, reqwest::Error> {
         let config = reqwest::get(format!("{server}/.well-known/openid-configuration"))
             .await?
             .json::<OpenIdDiscovery>()

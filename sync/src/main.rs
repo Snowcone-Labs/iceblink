@@ -9,7 +9,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let settings = cli::get_settings();
 
     tracing_subscriber::fmt()
-        .with_max_level(settings.logging.unwrap_or(cli::LoggingLevel::Info))
+        .with_max_level(settings.logging.unwrap_or_else(|| {
+            if cfg!(debug_assertions) {
+                cli::LoggingLevel::Debug
+            } else {
+                cli::LoggingLevel::Info
+            }
+        }))
         .init();
 
     match &settings.command {
