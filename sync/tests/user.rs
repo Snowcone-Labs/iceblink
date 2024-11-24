@@ -149,24 +149,15 @@ async fn checksum_changes_code_add(db: SqlitePool) {
     let (a1, _) = common::get_access_tokens(&db).await;
 
     let checksum1 = common::user_checksum(&app, a1.as_str()).await;
-    app.clone()
-        .oneshot(
-            Request::builder()
-                .method(Method::PUT)
-                .uri("/v1/code")
-                .header("Authorization", format!("Bearer {a1}"))
-                .header("Content-Type", "application/json")
-                .body(Body::from(
-                    serde_json::to_vec(&json!({
-                        "content": "garbage",
-                        "display_name": "Permafrost",
-                    }))
-                    .unwrap(),
-                ))
-                .unwrap(),
-        )
-        .await
-        .unwrap();
+    common::add_code(
+        &app,
+        &a1,
+        &json!({
+            "content": "garbage",
+            "display_name": "Permafrost",
+        }),
+    )
+    .await;
     let checksum2 = common::user_checksum(&app, a1.as_str()).await;
     assert_ne!(checksum1, checksum2);
 }

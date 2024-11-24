@@ -29,30 +29,20 @@ async fn list_own_codes(db: SqlitePool) {
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
-async fn add_codes(db: SqlitePool) {
+async fn add_code(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
     let (a1, a2) = common::get_access_tokens(&db).await;
 
     // Add code
-    let added = app
-        .clone()
-        .oneshot(
-            Request::builder()
-                .method(Method::PUT)
-                .uri("/v1/code")
-                .header("Authorization", format!("Bearer {a1}"))
-                .header("Content-Type", "application/json")
-                .body(Body::from(
-                    serde_json::to_vec(&json!({
-                        "content": "garbage",
-                        "display_name": "Permafrost",
-                    }))
-                    .unwrap(),
-                ))
-                .unwrap(),
-        )
-        .await
-        .unwrap();
+    let added = common::add_code(
+        &app,
+        &a1,
+        &json!({
+            "content": "garbage",
+            "display_name": "Permafrost",
+        }),
+    )
+    .await;
 
     assert_eq!(added.status(), StatusCode::OK);
     let added_res: models::codes::Code =
@@ -65,38 +55,19 @@ async fn add_codes(db: SqlitePool) {
     assert_eq!(added_res.id.len(), 16);
 
     // Check that it was added to the list
-    let user1_after = common::list_codes(&app, a1.as_str()).await;
-
-    assert_eq!(user1_after.status(), StatusCode::OK);
-    assert_eq!(
-        common::convert_response(user1_after).await,
-        json!([
-            {
-                "content": common::USER1_CODE1_CONTENT,
-                "display_name": "Google",
-                "icon_url": null,
-                "id": common::USER1_CODE1_ID,
-                "owner_id": common::USER1_ID,
-                "website_url": "google.com"
-            },
-            {
-                "content": common::USER1_CODE2_CONTENT,
-                "display_name": "google.com",
-                "icon_url": null,
-                "id": common::USER1_CODE2_ID,
-                "owner_id": common::USER1_ID,
-                "website_url": "google.com"
-            },
-            {
-                "content": "garbage",
-                "display_name": "Permafrost",
-                "icon_url": null,
-                "id": added_res.id,
-                "owner_id": common::USER1_ID,
-                "website_url": null
-            },
-        ])
-    );
+    let listing_request = common::list_codes_content(&app, a1.as_str()).await;
+    assert_eq!(listing_request.len(), 3);
+    for code in listing_request {
+        if code.id == common::USER1_CODE1_ID || code.id == common::USER1_CODE2_ID {
+            assert!(code.is_as_expected());
+        } else {
+            assert_eq!(code.website_url, None);
+            assert_eq!(code.icon_url, None);
+            assert_eq!(code.content, "garbage");
+            assert_eq!(code.owner_id, common::USER1_ID);
+            assert_eq!(code.display_name, "Permafrost");
+        }
+    }
 
     // User 2 should not affected by the operation
     let u2 = common::list_codes_content(&app, a2.as_str()).await;
@@ -105,6 +76,35 @@ async fn add_codes(db: SqlitePool) {
         assert!(code.is_as_expected())
     }
 }
+
+// #[sqlx::test(fixtures("users", "codes"))]
+// async fn add_code_no_content(db: SqlitePool) {
+//     let app = common::testing_setup(&db).await;
+//     let (a1, _) = common::get_access_tokens(&db).await;
+
+//     // Add code
+//     let added = common::add_code(
+//         &app,
+//         &a1,
+//         &json!({
+//             "display_name": "Permafrost",
+//         }),
+//     )
+//     .await;
+
+//     assert_eq!(added.status(), StatusCode::BAD_REQUEST);
+//     assert_eq!(
+//         common::convert_response(added).await,
+//         json!({ "kind": "MissingField", "error": "missing field" })
+//     );
+
+//     // Check that it was not added to the list
+//     let listing_request = common::list_codes_content(&app, a1.as_str()).await;
+//     assert_eq!(listing_request.len(), 2);
+//     for code in listing_request {
+//         assert!(code.is_as_expected());
+//     }
+// }
 
 //
 // Code edit

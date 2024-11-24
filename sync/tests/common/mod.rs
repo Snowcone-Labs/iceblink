@@ -95,6 +95,21 @@ pub async fn list_codes_content(app: &Router, token: &str) -> Vec<models::codes:
     serde_json::from_value(convert_response(list_codes(app, token).await).await).unwrap()
 }
 
+pub async fn add_code(app: &Router, token: &str, payload: &serde_json::Value) -> Response {
+    app.clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PUT)
+                .uri("/v1/code")
+                .header("Authorization", format!("Bearer {token}"))
+                .header("Content-Type", "application/json")
+                .body(Body::from(serde_json::to_vec(payload).unwrap()))
+                .unwrap(),
+        )
+        .await
+        .unwrap()
+}
+
 pub async fn delete_code(app: &Router, token: &str, id: &str) -> Response {
     app.clone()
         .oneshot(
