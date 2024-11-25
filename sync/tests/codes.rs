@@ -77,34 +77,37 @@ async fn add_code(db: SqlitePool) {
     }
 }
 
-// #[sqlx::test(fixtures("users", "codes"))]
-// async fn add_code_no_content(db: SqlitePool) {
-//     let app = common::testing_setup(&db).await;
-//     let (a1, _) = common::get_access_tokens(&db).await;
+#[sqlx::test(fixtures("users", "codes"))]
+async fn add_code_no_content(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+    let (a1, _) = common::get_access_tokens(&db).await;
 
-//     // Add code
-//     let added = common::add_code(
-//         &app,
-//         &a1,
-//         &json!({
-//             "display_name": "Permafrost",
-//         }),
-//     )
-//     .await;
+    // Add code
+    let added = common::add_code(
+        &app,
+        &a1,
+        &json!({
+            "display_name": "Permafrost",
+        }),
+    )
+    .await;
 
-//     assert_eq!(added.status(), StatusCode::BAD_REQUEST);
-//     assert_eq!(
-//         common::convert_response(added).await,
-//         json!({ "kind": "MissingField", "error": "missing field" })
-//     );
+    assert_eq!(added.status(), StatusCode::BAD_REQUEST);
+    assert_eq!(
+        common::convert_response(added).await,
+        json!({
+            "errorKind": "JsonDataError",
+            "message": "Unable to process JSON. Are you missing a field? Tip: Check with the swagger documentation at /swagger!",
+        })
+    );
 
-//     // Check that it was not added to the list
-//     let listing_request = common::list_codes_content(&app, a1.as_str()).await;
-//     assert_eq!(listing_request.len(), 2);
-//     for code in listing_request {
-//         assert!(code.is_as_expected());
-//     }
-// }
+    // Check that it was not added to the list
+    let listing_request = common::list_codes_content(&app, a1.as_str()).await;
+    assert_eq!(listing_request.len(), 2);
+    for code in listing_request {
+        assert!(code.is_as_expected());
+    }
+}
 
 //
 // Code edit
