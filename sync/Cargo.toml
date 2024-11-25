@@ -8,6 +8,7 @@ version = "0.1.0"
 [dependencies]
 axum = {version = "0.7.9", features = ["macros"]}
 axum-extra = {version = "0.9.6", features = ["cookie"]}
+axum-macros = "0.4.2"
 bon = "3.0.2"
 chrono = "0.4.38"
 clap = {version = "4.5.21", features = ["derive", "env"]}

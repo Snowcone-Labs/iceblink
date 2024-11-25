@@ -1,8 +1,8 @@
+use axum::{extract::rejection::JsonRejection, http::StatusCode, response::IntoResponse};
+use axum_macros::FromRequest;
 use core::fmt;
-use std::fmt::Debug;
-
-use axum::{http::StatusCode, response::IntoResponse, Json};
 use serde::Serialize;
+use std::fmt::Debug;
 use tracing::warn;
 
 pub mod codes;
@@ -19,6 +19,10 @@ pub struct ApiErrorResponse {
 #[derive(Debug)]
 pub enum ApiError {
     NotFound,
+    MissingContentType,
+    JsonSyntaxError,
+    JsonDataError,
+    JsonUnknownError,
     DatabaseError(sqlx::Error),
     MissingAuthentication,
     InvalidAuthentication,
@@ -35,6 +39,10 @@ impl IntoResponse for ApiError {
     fn into_response(self) -> axum::response::Response {
         let (status, message) = match &self {
             ApiError::NotFound => (StatusCode::NOT_FOUND, "Resource not found."),
+			ApiError::MissingContentType => (StatusCode::UNSUPPORTED_MEDIA_TYPE, "Unsupported Content-Type. Did you mean to set it to applicaiton/json?"),
+			ApiError::JsonSyntaxError => (StatusCode::BAD_REQUEST, "Unable to parse JSON request."),
+			ApiError::JsonDataError => (StatusCode::BAD_REQUEST, "Unable to process JSON. Are you missing a field? Tip: Check with the swagger documentation at /swagger!"),
+			ApiError::JsonUnknownError => (StatusCode::INTERNAL_SERVER_ERROR, "Unable to parse and process JSON contents. Try again later."),
             ApiError::DatabaseError(err) => {
 				warn!("Database error occoured: {}", err);
 				(StatusCode::INTERNAL_SERVER_ERROR, "Internal database error. Try again later.")
@@ -58,7 +66,7 @@ impl IntoResponse for ApiError {
 
         (
             status,
-            Json(ApiErrorResponse {
+            axum::Json(ApiErrorResponse {
                 message: message.to_string(),
                 kind: self.kind(),
             }),
@@ -101,6 +109,30 @@ impl From<jsonwebtoken::errors::Error> for ApiError {
             jsonwebtoken::errors::ErrorKind::ExpiredSignature
             | jsonwebtoken::errors::ErrorKind::InvalidSignature => ApiError::InvalidJwtSignature,
             _ => ApiError::InvalidAuthentication,
+        }
+    }
+}
+
+#[derive(FromRequest)]
+#[from_request(via(axum::Json), rejection(ApiError))]
+pub struct JSON<T>(T);
+
+impl<T> IntoResponse for JSON<T>
+where
+    T: Serialize,
+{
+    fn into_response(self) -> axum::response::Response {
+        axum::Json(self.0).into_response()
+    }
+}
+
+impl From<JsonRejection> for ApiError {
+    fn from(value: JsonRejection) -> Self {
+        match value {
+            JsonRejection::JsonDataError(_) => ApiError::JsonDataError,
+            JsonRejection::JsonSyntaxError(_) => ApiError::JsonSyntaxError,
+            JsonRejection::MissingJsonContentType(_) => ApiError::MissingContentType,
+            _ => ApiError::JsonUnknownError,
         }
     }
 }

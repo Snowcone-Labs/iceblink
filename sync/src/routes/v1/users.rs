@@ -1,4 +1,4 @@
-use super::ApiError;
+use super::{ApiError, JSON};
 use crate::{
     auth,
     models::{self, codes::Code, user::User},
@@ -7,7 +7,7 @@ use crate::{
 use axum::{
     extract::{Query, State},
     http::HeaderMap,
-    Extension, Json,
+    Extension,
 };
 use reqwest::{header, StatusCode};
 use serde::{Deserialize, Serialize};
@@ -93,7 +93,7 @@ pub async fn delete_account(
     Ok(StatusCode::NO_CONTENT)
 }
 
-#[derive(Debug, Serialize, Deserialize, utoipa::ToSchema)]
+#[derive(Debug, Serialize, Deserialize, utoipa::ToSchema, Clone)]
 pub struct ChecksumResponse {
     pub checksum: String,
 }
@@ -106,14 +106,13 @@ pub struct ChecksumResponse {
 		(status = OK, description = "Successfully calculated checksum of user", body = ChecksumResponse)
 	),
 )]
-#[axum::debug_handler]
 pub async fn checksum(
     State(state): State<Arc<AppState>>,
     Extension(user): Extension<User>,
-) -> Result<Json<ChecksumResponse>, ApiError> {
+) -> Result<JSON<ChecksumResponse>, ApiError> {
     let codes = Code::get_many(&state.db, user.clone().id).await?;
 
-    Ok(Json(ChecksumResponse {
+    Ok(JSON(ChecksumResponse {
         checksum: utils::checksum(codes, &user),
     }))
 }

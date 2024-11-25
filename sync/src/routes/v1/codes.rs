@@ -1,4 +1,4 @@
-use super::ApiError;
+use super::{ApiError, JSON};
 use crate::{
     models::{codes::Code, user::User},
     utils, AppState,
@@ -6,7 +6,7 @@ use crate::{
 use axum::{
     extract::{Path, State},
     http::StatusCode,
-    Extension, Json,
+    Extension,
 };
 use serde::Deserialize;
 use std::sync::Arc;
@@ -23,8 +23,8 @@ use utoipa::ToSchema;
 pub async fn list_all_codes(
     State(state): State<Arc<AppState>>,
     Extension(user): Extension<User>,
-) -> Json<Vec<Code>> {
-    Json(
+) -> JSON<Vec<Code>> {
+    JSON(
         Code::get_many(&state.db, user.id)
             .await
             .expect("Unable to find codes owned by user"),
@@ -50,8 +50,8 @@ pub struct CodeAddPayload {
 pub async fn add_code(
     State(state): State<Arc<AppState>>,
     Extension(user): Extension<User>,
-    Json(payload): Json<CodeAddPayload>,
-) -> Result<Json<Code>, ApiError> {
+    JSON(payload): JSON<CodeAddPayload>,
+) -> Result<JSON<Code>, ApiError> {
     let code = Code {
         id: utils::generate_id(16),
         owner_id: user.id,
@@ -62,7 +62,7 @@ pub async fn add_code(
     };
 
     code.insert(&state.db).await?;
-    Ok(Json(code))
+    Ok(JSON(code))
 }
 
 #[derive(Deserialize, ToSchema)]
@@ -93,9 +93,9 @@ pub async fn edit_code(
     State(state): State<Arc<AppState>>,
     Extension(user): Extension<User>,
     Path(id): Path<String>,
-    Json(payload): Json<CodeEditPayload>,
-) -> Result<Json<Code>, ApiError> {
-    Ok(Json(
+    JSON(payload): JSON<CodeEditPayload>,
+) -> Result<JSON<Code>, ApiError> {
+    Ok(JSON(
         Code::get(&state.db, id, user.id)
             .await?
             .ok_or(ApiError::NotFound)?
