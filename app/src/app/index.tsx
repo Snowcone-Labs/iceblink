@@ -1,3 +1,4 @@
+import { TotpCard } from "@/components/TotpCard";
 import {
   makeRedirectUri,
   useAuthRequest,
@@ -30,10 +31,17 @@ export default function Index() {
         justifyContent: "center",
         alignItems: "center",
       }}
+      className="bg-iceblink-bg-dark color-iceblink-fg-dark"
     >
       <Text className="text-5xl">Iceblink</Text>
       <Button title="Login" disabled={!request} onPress={() => promptAsync()} />
       {result && <Text>{JSON.stringify(result, null, 2)}</Text>}
+
+      <TotpCard
+        displayName="google"
+        logo="https://github.com/Erb3.png"
+        secret="not sure"
+      />
     </View>
   );
 }
