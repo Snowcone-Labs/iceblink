@@ -31,7 +31,7 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Text>Iceblink</Text>
+      <Text className="text-5xl">Iceblink</Text>
       <Button title="Login" disabled={!request} onPress={() => promptAsync()} />
       {result && <Text>{JSON.stringify(result, null, 2)}</Text>}
     </View>
