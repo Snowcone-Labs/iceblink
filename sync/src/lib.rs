@@ -1,11 +1,13 @@
 pub mod auth;
 pub mod cli;
+pub mod icons;
 pub mod models;
 pub mod routes;
 pub mod utils;
 
 use axum::http::{header, HeaderValue, Method};
 use axum::{middleware, Router};
+use icons::IconStore;
 use memory_serve::{load_assets, MemoryServe};
 use serde::Serialize;
 use sqlx::sqlite::SqliteConnectOptions;
@@ -40,6 +42,7 @@ pub struct AppState {
     pub db: SqlitePool,
     pub settings: ServerOptions,
     pub openid: auth::OpenId,
+    pub icon_store: IconStore,
 }
 
 #[derive(Debug, Serialize)]
@@ -105,6 +108,7 @@ pub fn configure_router(pool: &SqlitePool, opts: ServerOptions, openid: auth::Op
         db: pool.clone(),
         settings: opts.clone(),
         openid,
+        icon_store: IconStore {},
     });
 
     // Note: Read bottom to top
@@ -117,6 +121,7 @@ pub fn configure_router(pool: &SqlitePool, opts: ServerOptions, openid: auth::Op
             routes::v1::codes::delete_code,
             routes::v1::codes::edit_code
         ))
+        .routes(routes!(routes::v1::codes::code_icon))
         .routes(routes!(routes::v1::users::delete_account))
         .routes(routes!(routes::v1::users::checksum))
         .layer(middleware::from_fn_with_state(

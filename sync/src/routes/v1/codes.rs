@@ -5,9 +5,10 @@ use crate::{
 };
 use axum::{
     extract::{Path, State},
-    http::StatusCode,
+    http::{HeaderMap, StatusCode},
     Extension,
 };
+use reqwest::header;
 use serde::Deserialize;
 use std::sync::Arc;
 use utoipa::ToSchema;
@@ -133,4 +134,38 @@ pub async fn delete_code(
         .await?;
 
     Ok(StatusCode::NO_CONTENT)
+}
+
+#[utoipa::path(
+	get,
+	path = "/v1/code/{id}/icon",
+	tag = "codes",
+	responses(
+		(status = OK, description = "Icon found"),
+		(status = NOT_FOUND, description = "Unable to find icon")
+	),
+	params(
+		("id", description = "Id of code to fetch icon for")
+	)
+)]
+pub async fn code_icon(
+    State(state): State<Arc<AppState>>,
+    Extension(user): Extension<User>,
+    Path(id): Path<String>,
+) -> Result<(HeaderMap, Vec<u8>), ApiError> {
+    let code = Code::get(&state.db, id, user.id)
+        .await?
+        .ok_or(ApiError::NotFound)?;
+
+    let mut headers = HeaderMap::default();
+    headers.append(header::CONTENT_TYPE, "image/x-icon".parse().unwrap());
+
+    Ok((
+        headers,
+        state
+            .icon_store
+            .find_or_gather(code.website_url.ok_or(ApiError::NotFound)?.as_str())
+            .await
+            .map_err(|_| ApiError::NotFound)?,
+    ))
 }
