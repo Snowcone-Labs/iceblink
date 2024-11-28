@@ -1,4 +1,4 @@
-import { padding } from "@/utils/padding";
+import { padding } from "@/utils";
 import { Image, Text, View } from "react-native";
 
 export function TotpCard({

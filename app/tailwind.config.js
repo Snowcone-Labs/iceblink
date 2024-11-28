@@ -6,7 +6,7 @@ module.exports = {
     extend: {
       colors: {
         "iceblink-fg-dark": "#f7f7fa",
-        "iceblink-bg-dark": "#5865F2",
+        "iceblink-bg-dark": "#271e41",
 
         "iceblink-fg-dim": "#c8cbea",
         "iceblink-bg-dim": "#2f314b",
