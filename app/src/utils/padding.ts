@@ -1,4 +1,9 @@
-export function padding(a: number, b: number, c: number, d: number) {
+export function padding(
+  a: number | string,
+  b?: number | string,
+  c?: number | string,
+  d?: number | string
+) {
   return {
     paddingTop: a,
     paddingRight: b !== undefined ? b : a,

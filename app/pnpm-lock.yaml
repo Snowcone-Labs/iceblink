@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@expo-google-fonts/inter':
+    specifier: ^0.2.3
+    version: 0.2.3
   '@expo/server':
     specifier: ^0.5.0
     version: 0.5.0(typescript@5.7.2)
@@ -1524,6 +1527,10 @@ packages:
     engines: {node: '>=0.8.0'}
     dependencies:
       '@types/hammerjs': 2.0.46
+    dev: false
+
+  /@expo-google-fonts/inter@0.2.3:
+    resolution: {integrity: sha512-iHK9FI+dnE45X5c2Z5hSFwNH4zUWethizpbv3XUn0FIGw5jwvzriENz0a6wCdkI4/d+1QkurnHo5XHti7TbNJA==}
     dev: false
 
   /@expo/bunyan@4.0.1:
