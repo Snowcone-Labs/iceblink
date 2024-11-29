@@ -1,5 +1,5 @@
 import { IceblinkTextLogo } from "@/components/TextLogo";
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import { randomInArray } from "@/utils";
 import { Link } from "expo-router";
 import React, { useState } from "react";

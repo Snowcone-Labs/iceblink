@@ -80,9 +80,11 @@ interface Props {
   onPress?: () => void;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  disabled?: boolean;
+  classes?: string;
 }
 
-export default function Button({
+export function Button({
   children,
   color = "primary",
   shape = "normal",
@@ -93,6 +95,8 @@ export default function Button({
   onPress,
   style,
   textStyle,
+  disabled = false,
+  classes,
 }: Props) {
   const shapeStyle = shapes[shape];
   const buttonStyle: ViewStyle = {
@@ -123,7 +127,9 @@ export default function Button({
         buttonStyle,
         disableRaiseOnFocus ? {} : styles.raiseOnFocus,
       ]}
+      className={classes}
       activeOpacity={0.8}
+      disabled={disabled}
     >
       <Text style={textStyles}>{children}</Text>
     </TouchableOpacity>

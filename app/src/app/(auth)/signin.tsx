@@ -1,14 +1,18 @@
+import { IceblinkLogo } from "@/components/Logo";
+import { Button } from "@/components/ui/Button";
 import {
   makeRedirectUri,
   useAuthRequest,
   useAutoDiscovery,
 } from "expo-auth-session";
-import { Button, Text, View } from "react-native";
+import { Link } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
+import { Text, View } from "react-native";
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function SigninPage() {
   const discovery = useAutoDiscovery("https://pfapi.snowflake.blue");
-
-  // Create and load an auth request
   const [request, result, promptAsync] = useAuthRequest(
     {
       clientId: "cm3c1gn37000c22v77my7iwnv",
@@ -27,10 +31,24 @@ export default function SigninPage() {
         justifyContent: "center",
         alignItems: "center",
       }}
-      className="bg-iceblink-bg-dark color-iceblink-fg-dark"
+      className="bg-iceblink-bg-dark p-5"
     >
-      <Text className="text-5xl">Iceblink</Text>
-      <Button title="Login" disabled={!request} onPress={() => promptAsync()} />
+      <View className="my-auto flex justify-center items-center">
+        <Text className="color-iceblink-fg-dark text-5xl">Iceblink</Text>
+        <IceblinkLogo size={200} />
+      </View>
+      <View className="flex gap-3">
+        <Button
+          color="success"
+          disabled={!request}
+          onPress={() => promptAsync()}
+        >
+          Login
+        </Button>
+        <Link className="color-iceblink-fg-info text-lg" href="/(auth)/unlock">
+          Continue offline
+        </Link>
+      </View>
       {result && <Text>{JSON.stringify(result, null, 2)}</Text>}
     </View>
   );

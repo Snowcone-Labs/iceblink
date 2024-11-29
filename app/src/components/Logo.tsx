@@ -1,4 +1,4 @@
-export function IceblinkLogo() {
+export function IceblinkLogo({ size = 60 }: { size?: number }) {
   return (
     <svg
       width="1440"
@@ -7,8 +7,8 @@ export function IceblinkLogo() {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       style={{
-        width: 60,
-        height: 60,
+        width: size,
+        height: size,
         borderRadius: 8,
       }}
     >
