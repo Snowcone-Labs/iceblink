@@ -8,18 +8,20 @@ import {
 import { Link } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect } from "react";
-import { Text, View } from "react-native";
+import { Platform, Text, View } from "react-native";
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function SigninPage() {
-  useEffect(() => {
-    WebBrowser.warmUpAsync();
+  if (Platform.OS === "android") {
+    useEffect(() => {
+      WebBrowser.warmUpAsync();
 
-    return () => {
-      WebBrowser.coolDownAsync();
-    };
-  }, []);
+      return () => {
+        WebBrowser.coolDownAsync();
+      };
+    }, []);
+  }
 
   const discovery = useAutoDiscovery("https://pfapi.snowflake.blue");
   const [request, result, promptAsync] = useAuthRequest(
