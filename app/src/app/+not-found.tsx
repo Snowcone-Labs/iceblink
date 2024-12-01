@@ -2,7 +2,7 @@ import { IceblinkTextLogo } from "@/components/TextLogo";
 import { Button } from "@/components/ui/Button";
 import { randomInArray } from "@/utils";
 import { Link } from "expo-router";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 export default function NotFoundScreen() {

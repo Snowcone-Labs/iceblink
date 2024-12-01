@@ -7,6 +7,7 @@ import {
 } from "expo-auth-session";
 import { Link } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
+import { Settings } from "lucide-react-native";
 import { useEffect } from "react";
 import { Platform, Text, View } from "react-native";
 
@@ -41,15 +42,24 @@ export default function SigninPage() {
         <Text className="color-iceblink-fg-dark text-5xl">Iceblink</Text>
         <IceblinkLogo size={200} />
       </View>
-      <View className="flex gap-3">
-        <Button
-          color="success"
-          disabled={!request}
-          onPress={() => promptAsync()}
+      <View className="flex gap-3 w-full">
+        <View className="flex flex-row gap-3">
+          <Button
+            color="primary"
+            disabled={!request}
+            onPress={() => promptAsync()}
+            className="flex-grow"
+          >
+            Login
+          </Button>
+          <Button color="secondary">
+            <Settings />
+          </Button>
+        </View>
+        <Link
+          className="color-iceblink-fg-info text-lg text-right"
+          href="/(auth)/unlock"
         >
-          Login
-        </Button>
-        <Link className="color-iceblink-fg-info text-lg" href="/(auth)/unlock">
           Continue offline
         </Link>
       </View>

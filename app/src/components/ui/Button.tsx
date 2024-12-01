@@ -21,12 +21,12 @@ const colors = {
     fg: "#20fea1",
   },
   primary: {
-    bg: "#c8cbea",
-    fg: "#2f314b",
+    bg: "#0c346b",
+    fg: "#207efe",
   },
   secondary: {
-    bg: "#1e202f",
-    fg: "#f7f7fa",
+    bg: "#2f314b",
+    fg: "#c8cbea",
   },
 };
 
@@ -81,7 +81,7 @@ interface Props {
   style?: ViewStyle;
   textStyle?: TextStyle;
   disabled?: boolean;
-  classes?: string;
+  className?: string;
 }
 
 export function Button({
@@ -96,7 +96,7 @@ export function Button({
   style,
   textStyle,
   disabled = false,
-  classes,
+  className,
 }: Props) {
   const shapeStyle = shapes[shape];
   const buttonStyle: ViewStyle = {
@@ -127,7 +127,7 @@ export function Button({
         buttonStyle,
         disableRaiseOnFocus ? {} : styles.raiseOnFocus,
       ]}
-      className={classes}
+      className={className}
       activeOpacity={0.8}
       disabled={disabled}
     >
