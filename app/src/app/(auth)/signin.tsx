@@ -23,10 +23,10 @@ export default function SigninPage() {
     }, []);
   }
 
-  const discovery = useAutoDiscovery("https://pfapi.snowflake.blue");
+  const discovery = useAutoDiscovery(process.env.EXPO_PUBLIC_AUTH_SERVER!);
   const [request, result, promptAsync] = useAuthRequest(
     {
-      clientId: "cm3c1gn37000c22v77my7iwnv",
+      clientId: process.env.EXPO_PUBLIC_AUTH_CLIENT_ID!,
       redirectUri: makeRedirectUri({
         scheme: "iceblink",
       }),
