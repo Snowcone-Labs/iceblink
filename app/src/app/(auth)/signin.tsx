@@ -13,15 +13,15 @@ import { Platform, Text, View } from "react-native";
 WebBrowser.maybeCompleteAuthSession();
 
 export default function SigninPage() {
-  if (Platform.OS === "android") {
-    useEffect(() => {
+  useEffect(() => {
+    if (Platform.OS === "android") {
       WebBrowser.warmUpAsync();
 
       return () => {
         WebBrowser.coolDownAsync();
       };
-    }, []);
-  }
+    }
+  }, []);
 
   const discovery = useAutoDiscovery(process.env.EXPO_PUBLIC_AUTH_SERVER!);
   const [request, result, promptAsync] = useAuthRequest(

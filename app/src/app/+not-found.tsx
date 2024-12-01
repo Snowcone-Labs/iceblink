@@ -18,7 +18,7 @@ export default function NotFoundScreen() {
     "No blink, no link, just 404.",
     "Climate change causes ice to melt.",
   ];
-  const [headline, setHeadline] = useState<String>(randomInArray(badJokes));
+  const [headline, setHeadline] = useState(randomInArray(badJokes));
 
   return (
     <View className="flex flex-col items-center justify-between h-full p-4">
