@@ -1,12 +1,14 @@
 {
   "expo": {
     "name": "Iceblink",
+    "description": "TOTP authentication app by Snowflake-Software",
     "slug": "iceblink",
     "version": "0.0.1",
     "orientation": "portrait",
     "icon": "./src/assets/images/icon.png",
     "scheme": "iceblink",
     "userInterfaceStyle": "automatic",
+    "githubUrl": "https://github.com/Snowflake-Software/iceblink",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true

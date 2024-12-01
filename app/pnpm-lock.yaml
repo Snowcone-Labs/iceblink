@@ -50,6 +50,9 @@ dependencies:
   expo-router:
     specifier: ~4.0.9
     version: 4.0.9(expo-constants@17.0.3)(expo-linking@7.0.3)(expo@52.0.11)(react-dom@18.3.1)(react-native-reanimated@3.16.2)(react-native-safe-area-context@4.12.0)(react-native-screens@4.1.0)(react-native@0.76.3)(react@18.3.1)(typescript@5.7.2)
+  expo-screen-capture:
+    specifier: ~7.0.0
+    version: 7.0.0(expo@52.0.11)(react@18.3.1)
   expo-splash-screen:
     specifier: ~0.29.13
     version: 0.29.13(expo@52.0.11)
@@ -5155,6 +5158,16 @@ packages:
       - react-native
       - supports-color
       - typescript
+    dev: false
+
+  /expo-screen-capture@7.0.0(expo@52.0.11)(react@18.3.1):
+    resolution: {integrity: sha512-DDi77VfqLHSQiVTsW6lR6yGHbGtSS2oGK8vYRkjJPMePquP6/+5Nfx6JS+SNpRDAVBp2QP4TfTxEnWEF+V3wIQ==}
+    peerDependencies:
+      expo: '*'
+      react: '*'
+    dependencies:
+      expo: 52.0.11(@babel/core@7.26.0)(@babel/preset-env@7.26.0)(react-native-webview@13.12.2)(react-native@0.76.3)(react@18.3.1)
+      react: 18.3.1
     dev: false
 
   /expo-splash-screen@0.29.13(expo@52.0.11):

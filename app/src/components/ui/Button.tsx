@@ -22,7 +22,7 @@ const colors = {
   },
   primary: {
     bg: "#0c346b",
-    fg: "#207efe",
+    fg: "lightblue",
   },
   secondary: {
     bg: "#2f314b",
