@@ -52,9 +52,11 @@ export default function SigninPage() {
           >
             Login
           </Button>
-          <Button color="secondary">
-            <Settings />
-          </Button>
+          <Link href="/(auth)/server" asChild>
+            <Button color="secondary">
+              <Settings />
+            </Button>
+          </Link>
         </View>
         <Link
           className="color-iceblink-fg-info text-lg text-right"
