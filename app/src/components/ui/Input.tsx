@@ -3,6 +3,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
 
 interface Props {
+  value: string;
+  onChange: (value: string) => void;
   invalid?: boolean;
   disableRaiseOnFocus?: boolean;
   containerStyle?: object;
@@ -17,6 +19,8 @@ interface Props {
 
 export default function Input(props: Props) {
   const {
+    value,
+    onChange,
     invalid,
     disableRaiseOnFocus,
     containerStyle,
@@ -68,6 +72,8 @@ export default function Input(props: Props) {
         placeholder={placeholder}
         secureTextEntry={!passwordVisible}
         onKeyPress={handleKeyPress}
+        value={value} // Binds the value to the state
+        onChangeText={onChange} // Updates the state when the input changes
         {...remaining}
       />
       {showHideButton && (
