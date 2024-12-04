@@ -28,7 +28,7 @@ pub enum ApiError {
     InvalidAuthentication,
     InvalidJwtSignature,
     JwtUserGone,
-    /// Usually caused by giving IceBlink an invalid authentication token.
+    /// Usually caused by giving Iceblink an invalid authentication token.
     /// Still logging a warning regardless.
     OpenIdTokenExchangeFail(reqwest::Error),
     /// This should generally not happen, since we have received an authenticated token from the IdP.

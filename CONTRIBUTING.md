@@ -1,4 +1,4 @@
-# Contributing to IceBlink
+# Contributing to Iceblink
 
 ## App
 

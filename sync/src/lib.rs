@@ -84,7 +84,7 @@ impl Modify for ApiDocumentationBearer {
 		(url = "https://iceblink.snowflake.blue", description = "Production server")
 	),
 	info(
-		title ="IceBlink Sync Server",
+		title ="Iceblink Sync Server",
 		contact(
 			url="https://snowflake.blue",
 			name="Snowflake-Software",
