@@ -150,7 +150,7 @@ pub async fn user_checksum(app: &Router, token: &str) -> String {
         .oneshot(
             Request::builder()
                 .method(Method::GET)
-                .uri(format!("/v1/user/checksum"))
+                .uri("/v1/user/checksum")
                 .header("Authorization", format!("Bearer {token}"))
                 .body(Body::empty())
                 .unwrap(),

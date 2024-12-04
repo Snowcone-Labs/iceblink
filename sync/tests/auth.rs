@@ -6,7 +6,7 @@ use tower::ServiceExt;
 pub mod common;
 
 #[sqlx::test(fixtures("users", "codes"))]
-pub fn list_codes_no_header(db: SqlitePool) {
+pub async fn list_codes_no_header(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
 
     let response = app
@@ -31,7 +31,7 @@ pub fn list_codes_no_header(db: SqlitePool) {
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
-pub fn list_codes_empty_header(db: SqlitePool) {
+pub async fn list_codes_empty_header(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
 
     let response = app
@@ -57,7 +57,7 @@ pub fn list_codes_empty_header(db: SqlitePool) {
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
-pub fn list_codes_empty_bearer(db: SqlitePool) {
+pub async fn list_codes_empty_bearer(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
 
     let response = app
@@ -83,7 +83,7 @@ pub fn list_codes_empty_bearer(db: SqlitePool) {
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
-pub fn list_codes_garbage_bearer(db: SqlitePool) {
+pub async fn list_codes_garbage_bearer(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
 
     let response = app
@@ -109,7 +109,7 @@ pub fn list_codes_garbage_bearer(db: SqlitePool) {
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
-pub fn list_codes_invalid_signature(db: SqlitePool) {
+pub async fn list_codes_invalid_signature(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
 
     let response = app

@@ -69,7 +69,7 @@ async fn add_code(db: SqlitePool) {
         }
     }
 
-    // User 2 should not affected by the operation
+    // User 2 should not be affected by the operation
     let u2 = common::list_codes_content(&app, a2.as_str()).await;
     assert_eq!(u2.len(), 1);
     for code in u2.iter() {

@@ -15,7 +15,7 @@ pub enum IconStoreError {
 
 impl IconStore {
     pub fn new() -> Self {
-        return IconStore {};
+        IconStore {}
     }
 
     pub async fn init(&self) -> Result<(), IconStoreError> {

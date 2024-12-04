@@ -66,7 +66,7 @@ pub async fn oauth(
                 upstream_userid: userinfo.clone().id,
                 username: userinfo.clone().username,
             };
-            user.insert(&state.db).await.unwrap();
+            user.insert(&state.db).await?;
             user
         }
         Some(user) => user,
