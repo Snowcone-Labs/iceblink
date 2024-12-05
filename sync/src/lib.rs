@@ -5,16 +5,21 @@ pub mod models;
 pub mod routes;
 pub mod utils;
 
+use axum::extract::{MatchedPath, Request};
 use axum::http::{header, HeaderValue, Method};
+use axum::middleware::Next;
+use axum::response::IntoResponse;
 use axum::{middleware, Router};
 use icons::IconStore;
 use memory_serve::{load_assets, MemoryServe};
+use metrics_exporter_prometheus::{Matcher, PrometheusBuilder, PrometheusHandle};
 use serde::Serialize;
 use sqlx::sqlite::SqliteConnectOptions;
 use sqlx::SqlitePool;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::signal;
+use tokio::time::Instant;
 use tower_http::compression::CompressionLayer;
 use tower_http::cors::CorsLayer;
 use tower_http::timeout::TimeoutLayer;
@@ -43,6 +48,7 @@ pub struct AppState {
     pub settings: ServerOptions,
     pub openid: auth::OpenId,
     pub icon_store: IconStore,
+    pub metrics: PrometheusHandle,
 }
 
 #[derive(Debug, Serialize)]
@@ -109,6 +115,7 @@ pub fn configure_router(pool: &SqlitePool, opts: ServerOptions, openid: auth::Op
         settings: opts.clone(),
         openid,
         icon_store: IconStore {},
+        metrics: setup_metrics_recorder(),
     });
 
     // Note: Read bottom to top
@@ -128,7 +135,8 @@ pub fn configure_router(pool: &SqlitePool, opts: ServerOptions, openid: auth::Op
             state.clone(),
             auth::jwt_middleware,
         ))
-        .routes(routes!(routes::v1::index::instance_metadata))
+        .routes(routes!(routes::v1::misc::instance_metadata))
+        .routes(routes!(routes::v1::misc::metrics))
         .routes(routes!(routes::v1::users::oauth))
         .with_state(state)
         .nest_service(
@@ -169,6 +177,7 @@ pub fn configure_router(pool: &SqlitePool, opts: ServerOptions, openid: auth::Op
                 .zstd(true)
                 .quality(tower_http::CompressionLevel::Fastest),
         )
+        .route_layer(middleware::from_fn(track_metrics))
         .layer(TraceLayer::new_for_http())
         .layer(TimeoutLayer::new(Duration::from_secs(2)))
 }
@@ -241,4 +250,45 @@ async fn shutdown_signal() {
     }
 
     info!("Exit imminent")
+}
+
+fn setup_metrics_recorder() -> PrometheusHandle {
+    const EXPONENTIAL_SECONDS: &[f64] = &[
+        0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0,
+    ];
+
+    PrometheusBuilder::new()
+        .set_buckets_for_metric(
+            Matcher::Full("http_requests_duration_seconds".to_string()),
+            EXPONENTIAL_SECONDS,
+        )
+        .unwrap()
+        .install_recorder()
+        .unwrap()
+}
+
+async fn track_metrics(req: Request, next: Next) -> impl IntoResponse {
+    let start = Instant::now();
+    let path = if let Some(matched_path) = req.extensions().get::<MatchedPath>() {
+        matched_path.as_str().to_owned()
+    } else {
+        req.uri().path().to_owned()
+    };
+    let method = req.method().clone();
+
+    let response = next.run(req).await;
+
+    let latency = start.elapsed().as_secs_f64();
+    let status = response.status().as_u16().to_string();
+
+    let labels = [
+        ("method", method.to_string()),
+        ("path", path),
+        ("status", status),
+    ];
+
+    metrics::counter!("http_requests_total", &labels).increment(1);
+    metrics::histogram!("http_requests_duration_seconds", &labels).record(latency);
+
+    response
 }

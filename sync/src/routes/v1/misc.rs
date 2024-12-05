@@ -1,5 +1,5 @@
 use crate::AppState;
-use axum::{extract::State, http::StatusCode, Json};
+use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
 use serde::Serialize;
 use std::sync::Arc;
 use utoipa::ToSchema;
@@ -33,4 +33,17 @@ pub async fn instance_metadata(
             redirect_uri: data.settings.redirect_uri.clone(),
         }),
     )
+}
+
+#[utoipa::path(
+	get,
+	path = "/v1/metrics",
+	responses(
+		(status = OK, description = "Successfully fetched prometheus-style metrics")
+	),
+	tag = "misc",
+	security(())
+)]
+pub async fn metrics(State(data): State<Arc<AppState>>) -> impl IntoResponse {
+    data.metrics.render()
 }

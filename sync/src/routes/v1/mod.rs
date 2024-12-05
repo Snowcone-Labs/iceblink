@@ -6,7 +6,7 @@ use std::fmt::Debug;
 use tracing::warn;
 
 pub mod codes;
-pub mod index;
+pub mod misc;
 pub mod users;
 
 #[derive(Serialize)]
