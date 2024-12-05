@@ -63,18 +63,18 @@ pub async fn get_access_tokens(pool: &SqlitePool) -> (String, String) {
     )
 }
 
-pub async fn convert_response(response: Response) -> serde_json::Value {
-    serde_json::from_str(
-        String::from_utf8(
-            axum::body::to_bytes(response.into_body(), usize::MAX)
-                .await
-                .unwrap()
-                .to_vec(),
-        )
-        .unwrap()
-        .as_str(),
+pub async fn convert_response_str(response: Response) -> String {
+    String::from_utf8(
+        axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap()
+            .to_vec(),
     )
     .unwrap()
+}
+
+pub async fn convert_response(response: Response) -> serde_json::Value {
+    serde_json::from_str(&convert_response_str(response).await).unwrap()
 }
 
 pub async fn list_codes(app: &Router, token: &str) -> Response {

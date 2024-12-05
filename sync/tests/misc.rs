@@ -159,3 +159,59 @@ async fn cors_headers(db: SqlitePool) {
         "true"
     );
 }
+
+#[sqlx::test]
+async fn export_prometheus_metrics(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri("/v1/metrics")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(
+        response.headers().get("Content-Type").unwrap(),
+        "text/plain; charset=utf-8"
+    );
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri("/v1/metrics")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(
+        response.headers().get("Content-Type").unwrap(),
+        "text/plain; charset=utf-8"
+    );
+
+    let res = common::convert_response_str(response).await;
+    let mut has_found_line = false;
+    for line in res.lines() {
+        if !line.starts_with("http_requests_total") {
+            continue;
+        }
+
+        has_found_line = true;
+
+        assert_eq!(
+            line,
+            "http_requests_total{method=\"GET\",path=\"/v1/metrics\",status=\"200\"} 1"
+        )
+    }
+    assert!(has_found_line);
+}
