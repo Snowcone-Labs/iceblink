@@ -1,7 +1,10 @@
+use std::collections::HashMap;
+
 use axum::{
     body::Body,
     http::{Method, Request, StatusCode},
 };
+use chrono::{DateTime, Utc};
 use serde_json::json;
 use sqlx::SqlitePool;
 use tower::ServiceExt;
@@ -56,6 +59,56 @@ async fn landing_page(db: SqlitePool) {
         response.headers().get("Cache-Control").unwrap(),
         "max-age=31536000, immutable"
     );
+}
+
+#[sqlx::test]
+async fn security_policy_serves(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri("/.well-known/security.txt")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(
+        response.headers().get("Content-Type").unwrap(),
+        "text/plain"
+    );
+}
+
+#[sqlx::test]
+async fn security_policy_expiry(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri("/.well-known/security.txt")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    let res = common::convert_response_str(response).await;
+    let mut entries = HashMap::new();
+
+    for line in res.lines() {
+        let (key, value) = line.split_once(": ").unwrap();
+        entries.insert(key, value);
+    }
+
+    let expiry_str = entries.get("Expires").unwrap();
+    let expiry = expiry_str.parse::<DateTime<Utc>>().unwrap();
+    assert!(expiry > Utc::now())
 }
 
 #[sqlx::test]
