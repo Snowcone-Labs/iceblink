@@ -5,6 +5,7 @@ use axum::{
     http::{Method, Request, StatusCode},
 };
 use chrono::{DateTime, Utc};
+use regex::Regex;
 use serde_json::json;
 use sqlx::SqlitePool;
 use tower::ServiceExt;
@@ -27,8 +28,10 @@ async fn api_metadata(db: SqlitePool) {
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::OK);
+
+    let converted = common::convert_response(response).await;
     assert_eq!(
-        common::convert_response(response).await,
+        converted,
         json!({
             "version": env!("CARGO_PKG_VERSION"),
             "authorize": "N/A",
@@ -36,6 +39,9 @@ async fn api_metadata(db: SqlitePool) {
             "redirect_uri": "N/A",
         })
     );
+
+    let regex = Regex::new(r"^(\d+\.)?(\d+\.)?(\*|\d+)$").unwrap();
+    assert!(regex.is_match(converted.get("version").unwrap().as_str().unwrap()))
 }
 
 #[sqlx::test]
