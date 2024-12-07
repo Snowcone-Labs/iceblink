@@ -148,7 +148,7 @@ pub async fn delete_code(
 		("id", description = "Id of code to fetch icon for")
 	)
 )]
-pub async fn code_icon(
+pub async fn get_code_icon(
     State(state): State<Arc<AppState>>,
     Extension(user): Extension<User>,
     Path(id): Path<String>,

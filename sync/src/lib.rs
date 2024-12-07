@@ -109,12 +109,17 @@ impl Modify for ApiDocumentationBearer {
 struct ApiDocumentation;
 
 #[bon::builder]
-pub fn configure_router(pool: &SqlitePool, opts: ServerOptions, openid: auth::OpenId) -> Router {
+pub fn configure_router(
+    pool: &SqlitePool,
+    opts: ServerOptions,
+    openid: auth::OpenId,
+    icon_store: IconStore,
+) -> Router {
     let state = Arc::new(AppState {
         db: pool.clone(),
         settings: opts.clone(),
         openid,
-        icon_store: IconStore {},
+        icon_store,
         metrics: setup_metrics_recorder(),
     });
 
@@ -128,7 +133,7 @@ pub fn configure_router(pool: &SqlitePool, opts: ServerOptions, openid: auth::Op
             routes::v1::codes::delete_code,
             routes::v1::codes::edit_code
         ))
-        .routes(routes!(routes::v1::codes::code_icon))
+        .routes(routes!(routes::v1::codes::get_code_icon))
         .routes(routes!(routes::v1::users::delete_account))
         .routes(routes!(routes::v1::users::checksum))
         .layer(middleware::from_fn_with_state(
@@ -207,11 +212,15 @@ pub async fn serve(opts: ServerOptions) {
         .await
         .expect("Unable to setup OpenId authentication");
 
+    let icon_store = IconStore::new();
+    icon_store.init().await.unwrap();
+
     info!("Configuring HTTP router");
     let routes = configure_router()
         .pool(&pool)
         .opts(opts.clone())
         .openid(openid)
+        .icon_store(icon_store)
         .call();
 
     info!("Starting HTTP server");

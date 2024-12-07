@@ -1,12 +1,13 @@
 use crate::utils;
 use reqwest::header;
-use std::io::Cursor;
+use std::io::{Cursor, ErrorKind};
 use tokio::io::copy;
 use tracing::debug;
 
 #[derive(Debug, Clone)]
 pub struct IconStore {}
 
+#[derive(Debug)]
 pub enum IconStoreError {
     FileSystemFailToWrite,
     UnableToSendRequest,
@@ -19,11 +20,11 @@ impl IconStore {
     }
 
     pub async fn init(&self) -> Result<(), IconStoreError> {
-        tokio::fs::create_dir("./icons")
-            .await
-            .map_err(|_| IconStoreError::FileSystemFailToWrite)?;
-
-        Ok(())
+        match tokio::fs::create_dir("./icons").await {
+            Ok(_) => Ok(()),
+            Err(e) if e.kind() == ErrorKind::AlreadyExists => Ok(()),
+            Err(_) => Err(IconStoreError::FileSystemFailToWrite),
+        }
     }
 
     pub async fn find_or_gather(&self, domain: &str) -> Result<Vec<u8>, IconStoreError> {

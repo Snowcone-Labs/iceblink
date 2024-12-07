@@ -8,7 +8,9 @@ use axum::{
 };
 use iceblink_sync::{
     auth::{self, OpenId},
-    configure_router, models,
+    configure_router,
+    icons::IconStore,
+    models,
     routes::v1::users::ChecksumResponse,
     ServerOptions,
 };
@@ -26,6 +28,9 @@ pub const USER1_CODE2_CONTENT: &str = "XGDi8FlvZ5OGBoxG";
 pub const USER2_CODE1_CONTENT: &str = "djnaW1Pl2WjhWrU6";
 
 pub async fn testing_setup(pool: &SqlitePool) -> Router {
+    let icon_store = IconStore::new();
+    icon_store.init().await.unwrap();
+
     configure_router()
         .pool(pool)
         .openid(OpenId {
@@ -44,6 +49,7 @@ pub async fn testing_setup(pool: &SqlitePool) -> Router {
             redirect_uri: "N/A".into(),
             frontfacing: "N/A".into(),
         })
+        .icon_store(icon_store)
         .call()
 }
 
