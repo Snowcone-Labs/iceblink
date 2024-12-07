@@ -33,6 +33,7 @@ pub enum ApiError {
     OpenIdTokenExchangeFail(reqwest::Error),
     /// This should generally not happen, since we have received an authenticated token from the IdP.
     OpenIdUserinfoFail(reqwest::Error),
+    NoIcon,
 }
 
 impl IntoResponse for ApiError {
@@ -61,7 +62,8 @@ impl IntoResponse for ApiError {
 			ApiError::OpenIdUserinfoFail(err) => {
 				warn!("Failed to get userinfo from IdP: {err}");
 				(StatusCode::INTERNAL_SERVER_ERROR, "Failed to aquire userinfo from authentication provider. Try again later.")
-			}
+			},
+			ApiError::NoIcon => (StatusCode::NO_CONTENT, "Unable to find an icon for this code. Double check your website URL.")
         };
 
         (

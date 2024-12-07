@@ -164,8 +164,8 @@ pub async fn code_icon(
         headers,
         state
             .icon_store
-            .find_or_gather(code.website_url.ok_or(ApiError::NotFound)?.as_str())
+            .find_or_gather(code.website_url.ok_or(ApiError::NoIcon)?.as_str())
             .await
-            .map_err(|_| ApiError::NotFound)?,
+            .map_err(|_| ApiError::NoIcon)?,
     ))
 }

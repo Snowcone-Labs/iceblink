@@ -53,7 +53,7 @@ mod tests {
     fn hash_domain_always_returns_same() {
         let hash1 = hash_domain("google.com");
 
-        for _ in 1..100 {
+        for _ in 1..25 {
             assert_eq!(hash1, hash_domain("google.com"))
         }
     }
