@@ -169,3 +169,5 @@ pub async fn get_code_icon(
             .map_err(|_| ApiError::NoIcon)?,
     ))
 }
+
+// TODO: Delete icon (e.g if the user disables fetching icons using sync)

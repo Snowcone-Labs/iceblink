@@ -1,11 +1,16 @@
 use crate::utils;
 use reqwest::header;
-use std::io::{Cursor, ErrorKind};
+use std::{
+    io::{Cursor, ErrorKind},
+    path::PathBuf,
+};
 use tokio::io::copy;
 use tracing::debug;
 
 #[derive(Debug, Clone)]
-pub struct IconStore {}
+pub struct IconStore {
+    base: PathBuf,
+}
 
 #[derive(Debug)]
 pub enum IconStoreError {
@@ -16,11 +21,22 @@ pub enum IconStoreError {
 
 impl IconStore {
     pub fn new() -> Self {
-        IconStore {}
+        IconStore {
+            base: PathBuf::from("./icons"),
+        }
+    }
+
+    pub fn new_with_base(base: PathBuf) -> Self {
+        IconStore { base }
+    }
+
+    fn get_path(&self, domain: &str) -> PathBuf {
+        self.base
+            .join(PathBuf::from(utils::hash_domain(domain) + ".ico"))
     }
 
     pub async fn init(&self) -> Result<(), IconStoreError> {
-        match tokio::fs::create_dir("./icons").await {
+        match tokio::fs::create_dir(&self.base).await {
             Ok(_) => Ok(()),
             Err(e) if e.kind() == ErrorKind::AlreadyExists => Ok(()),
             Err(_) => Err(IconStoreError::FileSystemFailToWrite),
@@ -28,7 +44,7 @@ impl IconStore {
     }
 
     pub async fn find_or_gather(&self, domain: &str) -> Result<Vec<u8>, IconStoreError> {
-        match tokio::fs::read(format!("./icons/{}.ico", utils::hash_domain(domain))).await {
+        match tokio::fs::read(self.get_path(domain)).await {
             Ok(content) => Ok(content),
             Err(_) => self.gather(domain).await,
         }
@@ -51,10 +67,9 @@ impl IconStore {
             .await
             .map_err(|_| IconStoreError::UnableToParseResponse)?;
 
-        let mut file =
-            tokio::fs::File::create(format!("./icons/{}.ico", utils::hash_domain(domain)))
-                .await
-                .map_err(|_| IconStoreError::FileSystemFailToWrite)?;
+        let mut file = tokio::fs::File::create(self.get_path(domain))
+            .await
+            .map_err(|_| IconStoreError::FileSystemFailToWrite)?;
 
         let mut content = Cursor::new(&req);
         copy(&mut content, &mut file)
