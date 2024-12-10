@@ -413,3 +413,12 @@ async fn delete_code_other_user(db: SqlitePool) {
         assert!(code.is_as_expected())
     }
 }
+
+// TODO: Icon Test: getting icon twice returns same
+// TODO: Icon Test: it actually using the cached version - not fetching
+// TODO: Icon Test: nonexistant code
+// TODO: Icon Test: without website url
+// TODO: Icon Test: with invalid website url
+// TODO: Icon Test: with 404 on favicon
+// TODO: Icon Test: with other user's code
+// TODO: Icon Test: what if website returns non-ico?
