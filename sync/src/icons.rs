@@ -22,11 +22,11 @@ pub enum IconStoreError {
 impl IconStore {
     pub fn new() -> Self {
         IconStore {
-            base: PathBuf::from("./icons"),
+            base: std::env::temp_dir().join("iceblink-".to_string() + &utils::generate_id(5)),
         }
     }
 
-    pub fn new_with_base(base: PathBuf) -> Self {
+    pub fn new_with_custom_base(base: PathBuf) -> Self {
         IconStore { base }
     }
 
@@ -35,10 +35,10 @@ impl IconStore {
             .join(PathBuf::from(utils::hash_domain(domain) + ".ico"))
     }
 
-    pub async fn init(&self) -> Result<(), IconStoreError> {
+    pub async fn init(&self) -> Result<&Self, IconStoreError> {
         match tokio::fs::create_dir(&self.base).await {
-            Ok(_) => Ok(()),
-            Err(e) if e.kind() == ErrorKind::AlreadyExists => Ok(()),
+            Ok(_) => Ok(self),
+            Err(e) if e.kind() == ErrorKind::AlreadyExists => Ok(self),
             Err(_) => Err(IconStoreError::FileSystemFailToWrite),
         }
     }

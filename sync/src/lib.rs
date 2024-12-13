@@ -212,15 +212,12 @@ pub async fn serve(opts: ServerOptions) {
         .await
         .expect("Unable to setup OpenId authentication");
 
-    let icon_store = IconStore::new();
-    icon_store.init().await.unwrap();
-
     info!("Configuring HTTP router");
     let routes = configure_router()
         .pool(&pool)
         .opts(opts.clone())
         .openid(openid)
-        .icon_store(icon_store)
+        .icon_store(IconStore::new().init().await.unwrap().clone())
         .call();
 
     info!("Starting HTTP server");

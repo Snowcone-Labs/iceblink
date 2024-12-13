@@ -414,11 +414,89 @@ async fn delete_code_other_user(db: SqlitePool) {
     }
 }
 
-// TODO: Icon Test: getting icon twice returns same
+//
+// Icons
+//
+
+#[sqlx::test(fixtures("users", "codes"))]
+async fn icon_found_content_type(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+    let (a1, _) = common::get_access_tokens(&db).await;
+
+    let icon_request = common::get_icon(&app, &a1, common::USER1_CODE1_ID).await;
+    assert_eq!(
+        icon_request
+            .headers()
+            .get(axum::http::header::CONTENT_TYPE)
+            .unwrap(),
+        "image/x-icon"
+    );
+}
+
+#[sqlx::test(fixtures("users", "codes"))]
+async fn icon_code_permission_denied(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+    let (a1, _) = common::get_access_tokens(&db).await;
+
+    let icon_request = common::get_icon(&app, &a1, common::USER2_CODE1_ID).await;
+    assert_eq!(
+        icon_request
+            .headers()
+            .get(axum::http::header::CONTENT_TYPE)
+            .unwrap(),
+        "application/json"
+    );
+    assert_eq!(icon_request.status(), StatusCode::NOT_FOUND);
+    assert_eq!(
+        common::convert_response(icon_request).await,
+        json!({
+            "message": "Resource not found.",
+            "errorKind": "NotFound"
+        })
+    );
+}
+
+#[sqlx::test(fixtures("users", "codes"))]
+async fn icon_code_not_found(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+    let (a1, _) = common::get_access_tokens(&db).await;
+
+    let icon_request = common::get_icon(&app, &a1, common::USER2_CODE1_ID).await;
+    assert_eq!(
+        icon_request
+            .headers()
+            .get(axum::http::header::CONTENT_TYPE)
+            .unwrap(),
+        "application/json"
+    );
+    assert_eq!(icon_request.status(), StatusCode::NOT_FOUND);
+    assert_eq!(
+        common::convert_response(icon_request).await,
+        json!({
+            "message": "Resource not found.",
+            "errorKind": "NotFound"
+        })
+    );
+}
+
+#[sqlx::test(fixtures("users", "codes"))]
+async fn icon_returns_same(db: SqlitePool) {
+    let app = common::testing_setup(&db).await;
+    let (a1, _) = common::get_access_tokens(&db).await;
+
+    let icon_request1 =
+        common::convert_response_u8(common::get_icon(&app, &a1, common::USER1_CODE1_ID).await)
+            .await;
+
+    let icon_request2 =
+        common::convert_response_u8(common::get_icon(&app, &a1, common::USER1_CODE1_ID).await)
+            .await;
+
+    assert_eq!(icon_request1, icon_request2);
+}
+
 // TODO: Icon Test: it actually using the cached version - not fetching
-// TODO: Icon Test: nonexistant code
 // TODO: Icon Test: without website url
 // TODO: Icon Test: with invalid website url
 // TODO: Icon Test: with 404 on favicon
-// TODO: Icon Test: with other user's code
 // TODO: Icon Test: what if website returns non-ico?

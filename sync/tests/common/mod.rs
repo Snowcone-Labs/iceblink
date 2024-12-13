@@ -28,9 +28,6 @@ pub const USER1_CODE2_CONTENT: &str = "XGDi8FlvZ5OGBoxG";
 pub const USER2_CODE1_CONTENT: &str = "djnaW1Pl2WjhWrU6";
 
 pub async fn testing_setup(pool: &SqlitePool) -> Router {
-    let icon_store = IconStore::new();
-    icon_store.init().await.unwrap();
-
     configure_router()
         .pool(pool)
         .openid(OpenId {
@@ -49,7 +46,7 @@ pub async fn testing_setup(pool: &SqlitePool) -> Router {
             redirect_uri: "N/A".into(),
             frontfacing: "N/A".into(),
         })
-        .icon_store(icon_store)
+        .icon_store(IconStore::new().init().await.unwrap().clone())
         .call()
 }
 
@@ -77,6 +74,13 @@ pub async fn convert_response_str(response: Response) -> String {
             .to_vec(),
     )
     .unwrap()
+}
+
+pub async fn convert_response_u8(response: Response) -> Vec<u8> {
+    axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap()
+        .to_vec()
 }
 
 pub async fn convert_response(response: Response) -> serde_json::Value {
@@ -166,6 +170,20 @@ pub async fn user_checksum(app: &Router, token: &str) -> String {
 
     let parsed: ChecksumResponse = serde_json::from_value(convert_response(res).await).unwrap();
     parsed.checksum
+}
+
+pub async fn get_icon(app: &Router, token: &str, id: &str) -> Response {
+    app.clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(format!("/v1/code/{id}/icon"))
+                .header("Authorization", format!("Bearer {token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap()
 }
 
 pub trait AsExpected {
