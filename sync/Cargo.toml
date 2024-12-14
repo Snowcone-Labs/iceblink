@@ -37,13 +37,6 @@ utoipa = {version = "5.2.0", features = ["axum_extras"]}
 utoipa-axum = "0.1.2"
 utoipa-swagger-ui = {version = "8.0.3", features = ["axum", "vendored"]}
 
-[dev-dependencies]
-criterion = {version = "0.5"}
-
-[[bench]]
-harness = false
-name = "user_checksum"
-
 [profile.dev]
 debug = 0
 
