@@ -1,4 +1,5 @@
 use axum::{body::Body, http::Method, http::Request};
+use googletest::prelude::*;
 use serde_json::json;
 use sqlx::SqlitePool;
 use tower::ServiceExt;
@@ -6,6 +7,7 @@ use tower::ServiceExt;
 pub mod common;
 
 #[sqlx::test(fixtures("users", "codes"))]
+#[gtest]
 pub async fn list_codes_no_header(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
 
@@ -20,17 +22,18 @@ pub async fn list_codes_no_header(db: SqlitePool) {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), 401);
-    assert_eq!(
+    assert_that!(response.status(), eq(401));
+    assert_that!(
         common::convert_response(response).await,
-        json!({
+        eq(&json!({
             "message": "Missing authentication. Supply a JWT in the `iceblink_jwt` cookie, or use a bearer in the `Authorization` header.",
             "errorKind": "MissingAuthentication"
-        })
+        }))
     );
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
+#[gtest]
 pub async fn list_codes_empty_header(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
 
@@ -46,17 +49,18 @@ pub async fn list_codes_empty_header(db: SqlitePool) {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), 401);
-    assert_eq!(
+    assert_that!(response.status(), eq(401));
+    assert_that!(
         common::convert_response(response).await,
-        json!({
+        eq(&json!({
             "message": "Missing authentication. Supply a JWT in the `iceblink_jwt` cookie, or use a bearer in the `Authorization` header.",
             "errorKind": "MissingAuthentication"
-        })
+        }))
     );
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
+#[gtest]
 pub async fn list_codes_empty_bearer(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
 
@@ -72,17 +76,18 @@ pub async fn list_codes_empty_bearer(db: SqlitePool) {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), 401);
-    assert_eq!(
+    assert_that!(response.status(), eq(401));
+    assert_that!(
         common::convert_response(response).await,
-        json!({
+        eq(&json!({
             "message": "Missing authentication. Supply a JWT in the `iceblink_jwt` cookie, or use a bearer in the `Authorization` header.",
             "errorKind": "MissingAuthentication"
-        })
+        }))
     );
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
+#[gtest]
 pub async fn list_codes_garbage_bearer(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
 
@@ -98,17 +103,18 @@ pub async fn list_codes_garbage_bearer(db: SqlitePool) {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), 401);
-    assert_eq!(
+    assert_that!(response.status(), eq(401));
+    assert_that!(
         common::convert_response(response).await,
-        json!({
+        eq(&json!({
             "message": "The supplied authentication is invalid.",
             "errorKind": "InvalidAuthentication"
-        })
+        }))
     );
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
+#[gtest]
 pub async fn list_codes_invalid_signature(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
 
@@ -124,12 +130,12 @@ pub async fn list_codes_invalid_signature(db: SqlitePool) {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), 401);
-    assert_eq!(
+    assert_that!(response.status(), eq(401));
+    assert_that!(
         common::convert_response(response).await,
-        json!({
+        eq(&json!({
             "message": "The supplied authentication has an invalid signature. Try logging in again.",
             "errorKind": "InvalidJwtSignature"
-        })
+        }))
     );
 }

@@ -3,7 +3,7 @@ use axum::{
     http::{Method, Request, StatusCode},
 };
 use chrono::{DateTime, Utc};
-use regex::Regex;
+use googletest::prelude::*;
 use serde_json::json;
 use sqlx::SqlitePool;
 use std::collections::HashMap;
@@ -12,6 +12,7 @@ use tower::ServiceExt;
 pub mod common;
 
 #[sqlx::test]
+#[gtest]
 async fn api_metadata(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
 
@@ -26,24 +27,27 @@ async fn api_metadata(db: SqlitePool) {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::OK);
+    assert_that!(response.status(), eq(StatusCode::OK));
 
     let converted = common::convert_response(response).await;
-    assert_eq!(
+    assert_that!(
         converted,
-        json!({
+        eq(&json!({
             "version": env!("CARGO_PKG_VERSION"),
             "authorize": "N/A",
             "client_id": "N/A",
             "redirect_uri": "N/A",
-        })
+        }))
     );
 
-    let regex = Regex::new(r"^(\d+\.)?(\d+\.)?(\*|\d+)$").unwrap();
-    assert!(regex.is_match(converted.get("version").unwrap().as_str().unwrap()))
+    assert_that!(
+        converted.get("version").unwrap().as_str().unwrap(),
+        matches_regex(r"^(\d+\.)?(\d+\.)?(\*|\d+)$")
+    );
 }
 
 #[sqlx::test]
+#[gtest]
 async fn landing_page(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
 
@@ -58,15 +62,19 @@ async fn landing_page(db: SqlitePool) {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::OK);
-    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/html");
-    assert_eq!(
+    assert_that!(response.status(), eq(StatusCode::OK));
+    assert_that!(
+        response.headers().get("Content-Type").unwrap(),
+        eq("text/html")
+    );
+    assert_that!(
         response.headers().get("Cache-Control").unwrap(),
-        "max-age=31536000, immutable"
+        eq("max-age=31536000, immutable")
     );
 }
 
 #[sqlx::test]
+#[gtest]
 async fn security_policy_serves(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
 
@@ -81,14 +89,15 @@ async fn security_policy_serves(db: SqlitePool) {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::OK);
-    assert_eq!(
+    assert_that!(response.status(), eq(StatusCode::OK));
+    assert_that!(
         response.headers().get("Content-Type").unwrap(),
-        "text/plain"
+        eq("text/plain")
     );
 }
 
 #[sqlx::test]
+#[gtest]
 async fn security_policy_expiry(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
 
@@ -113,10 +122,11 @@ async fn security_policy_expiry(db: SqlitePool) {
 
     let expiry_str = entries.get("Expires").unwrap();
     let expiry = expiry_str.parse::<DateTime<Utc>>().unwrap();
-    assert!(expiry > Utc::now())
+    assert_that!(expiry, gt(Utc::now()));
 }
 
 #[sqlx::test]
+#[gtest]
 async fn swagger(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
 
@@ -131,11 +141,15 @@ async fn swagger(db: SqlitePool) {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::OK);
-    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/html");
+    assert_that!(response.status(), eq(StatusCode::OK));
+    assert_that!(
+        response.headers().get("Content-Type").unwrap(),
+        eq("text/html")
+    );
 }
 
 #[sqlx::test]
+#[gtest]
 async fn swagger_redirect(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
 
@@ -150,11 +164,12 @@ async fn swagger_redirect(db: SqlitePool) {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::SEE_OTHER);
-    assert_eq!(response.headers().get("Location").unwrap(), "/swagger/");
+    assert_that!(response.status(), eq(StatusCode::SEE_OTHER));
+    assert_that!(response.headers().get("Location").unwrap(), eq("/swagger/"));
 }
 
 #[sqlx::test]
+#[gtest]
 async fn openapi_spec(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
 
@@ -169,10 +184,10 @@ async fn openapi_spec(db: SqlitePool) {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::OK);
-    assert_eq!(
+    assert_that!(response.status(), eq(StatusCode::OK));
+    assert_that!(
         response.headers().get("Content-Type").unwrap(),
-        "application/json"
+        eq("application/json")
     );
 
     // check that it can parse
@@ -180,6 +195,7 @@ async fn openapi_spec(db: SqlitePool) {
 }
 
 #[sqlx::test]
+#[gtest]
 async fn cors_headers(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
 
@@ -194,31 +210,32 @@ async fn cors_headers(db: SqlitePool) {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::OK);
-    assert_eq!(
+    assert_that!(response.status(), eq(StatusCode::OK));
+    assert_that!(
         response
             .headers()
             .get("Access-Control-Allow-Origin")
             .unwrap(),
-        "N/A"
+        eq("N/A")
     );
-    assert_eq!(
+    assert_that!(
         response
             .headers()
             .get("Access-Control-Allow-Headers")
             .unwrap(),
-        "authorization,content-type"
+        eq("authorization,content-type")
     );
-    assert_eq!(
+    assert_that!(
         response
             .headers()
             .get("Access-Control-Allow-Credentials")
             .unwrap(),
-        "true"
+        eq("true")
     );
 }
 
 #[sqlx::test]
+#[gtest]
 async fn export_prometheus_metrics(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
 
@@ -234,10 +251,10 @@ async fn export_prometheus_metrics(db: SqlitePool) {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::OK);
-    assert_eq!(
+    assert_that!(response.status(), eq(StatusCode::OK));
+    assert_that!(
         response.headers().get("Content-Type").unwrap(),
-        "text/plain; charset=utf-8"
+        eq("text/plain; charset=utf-8")
     );
 
     let response = app
@@ -251,10 +268,10 @@ async fn export_prometheus_metrics(db: SqlitePool) {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::OK);
-    assert_eq!(
+    assert_that!(response.status(), eq(StatusCode::OK));
+    assert_that!(
         response.headers().get("Content-Type").unwrap(),
-        "text/plain; charset=utf-8"
+        eq("text/plain; charset=utf-8")
     );
 
     let res = common::convert_response_str(response).await;
@@ -266,10 +283,10 @@ async fn export_prometheus_metrics(db: SqlitePool) {
 
         has_found_line = true;
 
-        assert_eq!(
+        assert_that!(
             line,
-            "http_requests_total{method=\"GET\",path=\"/v1/metrics\",status=\"200\"} 1"
+            eq("http_requests_total{method=\"GET\",path=\"/v1/metrics\",status=\"200\"} 1")
         )
     }
-    assert!(has_found_line);
+    assert_that!(has_found_line, is_true());
 }

@@ -37,6 +37,9 @@ utoipa = {version = "5.2.0", features = ["axum_extras"]}
 utoipa-axum = "0.1.2"
 utoipa-swagger-ui = {version = "8.0.3", features = ["axum", "vendored"]}
 
+[dev-dependencies]
+googletest = "0.13.0"
+
 [profile.dev]
 debug = 0
 

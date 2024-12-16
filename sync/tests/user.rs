@@ -3,6 +3,7 @@ use axum::{
     http::{Method, Request, StatusCode},
 };
 use common::AsExpected;
+use googletest::prelude::*;
 use iceblink_sync::models;
 use serde_json::json;
 use sqlx::SqlitePool;
@@ -11,6 +12,7 @@ use tower::ServiceExt;
 pub mod common;
 
 #[sqlx::test(fixtures("users", "codes"))]
+#[gtest]
 async fn delete_account(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
     let (a1, a2) = common::get_access_tokens(&db).await;
@@ -27,7 +29,7 @@ async fn delete_account(db: SqlitePool) {
         )
         .await
         .unwrap();
-    assert_eq!(user1_delete.status(), StatusCode::NO_CONTENT);
+    assert_that!(user1_delete.status(), eq(StatusCode::NO_CONTENT));
 
     let user1_codes_after_deleted = app
         .clone()
@@ -41,41 +43,48 @@ async fn delete_account(db: SqlitePool) {
         )
         .await
         .unwrap();
-    assert_eq!(user1_codes_after_deleted.status(), StatusCode::UNAUTHORIZED);
+    assert_that!(
+        user1_codes_after_deleted.status(),
+        eq(StatusCode::UNAUTHORIZED)
+    );
 
     // User2 still works as usual
     let u2 = common::list_codes_content(&app, a2.as_str()).await;
-    assert_eq!(u2.len(), 1);
+    assert_that!(u2.len(), eq(1));
     for code in u2.iter() {
         assert!(code.is_as_expected())
     }
 
     // Check that the user is actually deleted from database.
-    assert!(models::user::User::get_by_id(&db, common::USER1_ID.into())
-        .await
-        .unwrap()
-        .is_none());
+    assert_that!(
+        models::user::User::get_by_id(&db, common::USER1_ID.into())
+            .await
+            .unwrap(),
+        none()
+    );
 
     // Check that the user codes are deleted
-    assert!(
+    assert_that!(
         models::codes::Code::get(&db, common::USER1_CODE1_ID.into(), common::USER1_ID.into())
             .await
-            .unwrap()
-            .is_none(),
+            .unwrap(),
+        none()
     );
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
+#[gtest]
 async fn checksum_two_requests_equal(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
     let (a1, _) = common::get_access_tokens(&db).await;
 
     let checksum1 = common::user_checksum(&app, a1.as_str()).await;
     let checksum2 = common::user_checksum(&app, a1.as_str()).await;
-    assert_eq!(checksum1, checksum2);
+    assert_that!(checksum1, eq(&checksum2));
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
+#[gtest]
 async fn checksum_changes_code_name(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
     let (a1, _) = common::get_access_tokens(&db).await;
@@ -91,10 +100,11 @@ async fn checksum_changes_code_name(db: SqlitePool) {
     )
     .await;
     let checksum2 = common::user_checksum(&app, a1.as_str()).await;
-    assert_ne!(checksum1, checksum2);
+    assert_that!(checksum1, not(eq(&checksum2)));
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
+#[gtest]
 async fn checksum_changes_code_content(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
     let (a1, _) = common::get_access_tokens(&db).await;
@@ -110,10 +120,11 @@ async fn checksum_changes_code_content(db: SqlitePool) {
     )
     .await;
     let checksum2 = common::user_checksum(&app, a1.as_str()).await;
-    assert_ne!(checksum1, checksum2);
+    assert_that!(checksum1, not(eq(&checksum2)));
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
+#[gtest]
 async fn checksum_equal_edit_and_revert_content(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
     let (a1, _) = common::get_access_tokens(&db).await;
@@ -140,10 +151,11 @@ async fn checksum_equal_edit_and_revert_content(db: SqlitePool) {
     .await;
 
     let checksum2 = common::user_checksum(&app, a1.as_str()).await;
-    assert_eq!(checksum1, checksum2);
+    assert_that!(checksum1, eq(&checksum2));
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
+#[gtest]
 async fn checksum_changes_code_add(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
     let (a1, _) = common::get_access_tokens(&db).await;
@@ -159,10 +171,11 @@ async fn checksum_changes_code_add(db: SqlitePool) {
     )
     .await;
     let checksum2 = common::user_checksum(&app, a1.as_str()).await;
-    assert_ne!(checksum1, checksum2);
+    assert_that!(checksum1, not(eq(&checksum2)));
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
+#[gtest]
 async fn checksum_changes_code_delete(db: SqlitePool) {
     let app = common::testing_setup(&db).await;
     let (a1, _) = common::get_access_tokens(&db).await;
@@ -170,5 +183,6 @@ async fn checksum_changes_code_delete(db: SqlitePool) {
     let checksum1 = common::user_checksum(&app, a1.as_str()).await;
     common::delete_code(&app, &a1, common::USER1_CODE1_ID).await;
     let checksum2 = common::user_checksum(&app, a1.as_str()).await;
-    assert_ne!(checksum1, checksum2);
+
+    assert_that!(checksum1, not(eq(&checksum2)));
 }
