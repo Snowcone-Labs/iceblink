@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 export default function NotFoundScreen() {
-  const badJokes = [
+  const cringeJokes = [
     "This page is colder than an expired 2FA code.",
     "We blinked and this page vanished into the ice. Maybe it's in another time window?",
     "Just like a 2FA code, this page has expired and melted away.",
@@ -18,7 +18,7 @@ export default function NotFoundScreen() {
     "No blink, no link, just 404.",
     "Climate change causes ice to melt.",
   ];
-  const [headline, setHeadline] = useState(randomInArray(badJokes));
+  const [headline, setHeadline] = useState(randomInArray(cringeJokes));
 
   return (
     <View className="flex flex-col items-center justify-between h-full p-4">
@@ -28,7 +28,9 @@ export default function NotFoundScreen() {
         <Text className="text-center text-2xl font-bold text-iceblink-fg-dark">
           Page not found
         </Text>
-        <TouchableOpacity onPress={() => setHeadline(randomInArray(badJokes))}>
+        <TouchableOpacity
+          onPress={() => setHeadline(randomInArray(cringeJokes))}
+        >
           <Text className="text-center text-lg text-iceblink-fg-dim">
             {headline}
           </Text>

@@ -3,7 +3,11 @@
 ## App
 
 1. Move into the `app` folder
-2. ??? Develop the app maybe
+2. TODO: write this
+3. Develop the app or something
+4. `npx expo start`
+5. Press `w`
+6. It should open in browser
 
 ## Sync server
 
@@ -18,8 +22,8 @@
 
 The project is optimized for faster compiletime in dev, and faster runtime at
 release. Release builds made with `--release` will compile slower due to theese
-runtime performance optimizations. **Yes we know the compile times are slow,
-there is little we can do**
+runtime performance optimizations. **Yes we know the compile times are slow in
+dev too, there is little we can do**.
 
 An OpenAPI Swagger UI is available at `/swagger` with the OpenAPI spec at
 `/openapi.json`. These are generated using the `utoipa` family of crates,
