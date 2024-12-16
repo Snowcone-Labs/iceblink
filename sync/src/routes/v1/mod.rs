@@ -142,25 +142,29 @@ impl From<JsonRejection> for ApiError {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use googletest::prelude::*;
 
     #[test]
     fn test_get_kind_missing_authentication() {
-        assert_eq!(
+        assert_that!(
             ApiError::MissingAuthentication.kind(),
-            "MissingAuthentication"
+            eq("MissingAuthentication")
         );
     }
 
     #[test]
     fn test_get_kind_sqlx_misc() {
-        assert_eq!(
+        assert_that!(
             ApiError::DatabaseError(sqlx::Error::ColumnNotFound("joe".to_string())).kind(),
-            "DatabaseError"
+            eq("DatabaseError")
         );
     }
 
     #[test]
     fn test_get_kind_not_found_from_sqlx() {
-        assert_eq!(ApiError::from(sqlx::Error::RowNotFound).kind(), "NotFound");
+        assert_that!(
+            ApiError::from(sqlx::Error::RowNotFound).kind(),
+            eq("NotFound")
+        );
     }
 }

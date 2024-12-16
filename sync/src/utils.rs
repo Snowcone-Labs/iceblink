@@ -25,27 +25,26 @@ pub const USER_AGENT: &str = concat!("Snowcone-Labs/Iceblink/", env!("CARGO_PKG_
 #[cfg(test)]
 mod tests {
     use super::*;
-    use regex::Regex;
+    use googletest::prelude::*;
 
     #[test]
     fn test_generate_id() {
-        let regex = Regex::new(r"^[a-zA-Z0-9]*$").unwrap();
         let mut ids: Vec<String> = vec![];
 
         for _ in 0..500 {
             let id = generate_id(16);
 
-            assert_eq!(id.len(), 16);
-            assert!(regex.is_match(id.as_str()));
-            assert!(!ids.contains(&id));
+            assert_that!(id.len(), eq(16));
+            assert_that!(id, matches_regex(r"^[a-zA-Z0-9]*$"));
+            assert_that!(ids, not(contains(eq(&id))));
 
             ids.push(id.clone());
         }
 
         for x in 0..100 {
             let id = generate_id(x);
-            assert_eq!(id.len(), x);
-            assert!(regex.is_match(id.as_str()));
+            assert_that!(id.len(), eq(x));
+            assert_that!(id, matches_regex(r"^[a-zA-Z0-9]*$"));
         }
     }
 
@@ -54,7 +53,7 @@ mod tests {
         let hash1 = hash_domain("google.com");
 
         for _ in 1..25 {
-            assert_eq!(hash1, hash_domain("google.com"))
+            assert_that!(hash1, eq(&hash_domain("google.com")))
         }
     }
 }
