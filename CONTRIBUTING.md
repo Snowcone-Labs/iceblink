@@ -32,6 +32,9 @@ information about the endpoints you can look into the code.
 Tests can be run with `cargo test`. Unit tests test specific small pieces of
 code, and should live next to the source-code. These tests work well for
 utilities. Integration tests are in the `tests` folder, and test it as if it is
-an HTTP API. By using the `sqlx::text` macro we get passed a mock database into
-the test function. This database is reset, but applied with the data from
-fixtures.
+an HTTP API. We use an assertion library called `googletest`. It is well
+documented, including in the Advanced Rust Testing book. Avoid using `assert!`
+or `assert_eq!`. By using the `sqlx::test` macro we get passed a mock database
+into the test function. This database is reset, but applied with the data from
+fixtures. Avoid using `#[test]`, instead use `#[gtest]`. If using the
+`sqlx::test` macro, put a `#[gtest]` after it.

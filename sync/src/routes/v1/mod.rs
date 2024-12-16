@@ -144,7 +144,7 @@ mod tests {
     use super::*;
     use googletest::prelude::*;
 
-    #[test]
+    #[gtest]
     fn test_get_kind_missing_authentication() {
         assert_that!(
             ApiError::MissingAuthentication.kind(),
@@ -152,7 +152,7 @@ mod tests {
         );
     }
 
-    #[test]
+    #[gtest]
     fn test_get_kind_sqlx_misc() {
         assert_that!(
             ApiError::DatabaseError(sqlx::Error::ColumnNotFound("joe".to_string())).kind(),
@@ -160,7 +160,7 @@ mod tests {
         );
     }
 
-    #[test]
+    #[gtest]
     fn test_get_kind_not_found_from_sqlx() {
         assert_that!(
             ApiError::from(sqlx::Error::RowNotFound).kind(),

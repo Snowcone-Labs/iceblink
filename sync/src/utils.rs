@@ -27,7 +27,7 @@ mod tests {
     use super::*;
     use googletest::prelude::*;
 
-    #[test]
+    #[gtest]
     fn test_generate_id() {
         let mut ids: Vec<String> = vec![];
 
@@ -48,7 +48,7 @@ mod tests {
         }
     }
 
-    #[test]
+    #[gtest]
     fn hash_domain_always_returns_same() {
         let hash1 = hash_domain("google.com");
 
