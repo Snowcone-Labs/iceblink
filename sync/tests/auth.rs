@@ -1,4 +1,4 @@
-use axum::{body::Body, http::Method, http::Request};
+use axum::{body::Body, http::Method, http::Request, http::StatusCode};
 use googletest::prelude::*;
 use serde_json::json;
 use sqlx::SqlitePool;
@@ -22,7 +22,7 @@ pub async fn list_codes_no_header(db: SqlitePool) {
         .await
         .unwrap();
 
-    assert_that!(response.status(), eq(401));
+    assert_that!(response.status(), eq(StatusCode::UNAUTHORIZED));
     assert_that!(
         common::convert_response(response).await,
         eq(&json!({
@@ -49,7 +49,7 @@ pub async fn list_codes_empty_header(db: SqlitePool) {
         .await
         .unwrap();
 
-    assert_that!(response.status(), eq(401));
+    assert_that!(response.status(), eq(StatusCode::UNAUTHORIZED));
     assert_that!(
         common::convert_response(response).await,
         eq(&json!({
@@ -76,7 +76,7 @@ pub async fn list_codes_empty_bearer(db: SqlitePool) {
         .await
         .unwrap();
 
-    assert_that!(response.status(), eq(401));
+    assert_that!(response.status(), eq(StatusCode::UNAUTHORIZED));
     assert_that!(
         common::convert_response(response).await,
         eq(&json!({
@@ -103,7 +103,7 @@ pub async fn list_codes_garbage_bearer(db: SqlitePool) {
         .await
         .unwrap();
 
-    assert_that!(response.status(), eq(401));
+    assert_that!(response.status(), eq(StatusCode::UNAUTHORIZED));
     assert_that!(
         common::convert_response(response).await,
         eq(&json!({
@@ -130,7 +130,7 @@ pub async fn list_codes_invalid_signature(db: SqlitePool) {
         .await
         .unwrap();
 
-    assert_that!(response.status(), eq(401));
+    assert_that!(response.status(), eq(StatusCode::UNAUTHORIZED));
     assert_that!(
         common::convert_response(response).await,
         eq(&json!({
