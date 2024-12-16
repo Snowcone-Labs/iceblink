@@ -4,7 +4,7 @@
 
 ---
 
-Iceblink is a 2FA authentication app developed by Snowflake-Software. We take
+Iceblink is a 2FA authentication app developed by Snowcone Labs. We take
 security extremely seriously in our products, and value efforts by security
 researchers. If you have found a potentional security issue, we encourage you to
 report it. TA his will improve the security of our users, and your contribution
@@ -33,4 +33,4 @@ published.
 - Social engineering
 - Unauthenticated / low impact CSRF
 
-[GitHub Private Vulnerability Report]: https://github.com/Snowflake-Software/iceblink/security
+[GitHub Private Vulnerability Report]: https://github.com/Snowcone-Labs/iceblink/security

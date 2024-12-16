@@ -93,7 +93,7 @@ impl Modify for ApiDocumentationBearer {
 		title ="Iceblink Sync Server",
 		contact(
 			url="https://snowflake.blue",
-			name="Snowflake-Software",
+			name="Snowcone Labs",
 		),
 		license(
 			name="AGPLv3",

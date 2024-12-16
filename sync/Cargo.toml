@@ -1,5 +1,5 @@
 [package]
-authors = ["Erb3", "Snowflake-Software"]
+authors = ["Erb3", "Snowcone Labs"]
 description = "Sync and backup service for the Iceblink 2FA manager"
 edition = "2021"
 name = "iceblink-sync"

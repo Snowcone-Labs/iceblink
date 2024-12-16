@@ -1,14 +1,14 @@
 {
   "expo": {
     "name": "Iceblink",
-    "description": "TOTP authentication app by Snowflake-Software",
+    "description": "2FA authentication app by Snowcone Labs",
     "slug": "iceblink",
     "version": "0.0.1",
     "orientation": "portrait",
     "icon": "./src/assets/images/icon.png",
     "scheme": "iceblink",
     "userInterfaceStyle": "automatic",
-    "githubUrl": "https://github.com/Snowflake-Software/iceblink",
+    "githubUrl": "https://github.com/Snowcone-Labs/iceblink",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
@@ -18,7 +18,7 @@
         "foregroundImage": "./src/assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "blue.snowflake_software.iceblink"
+      "package": "blue.snowflake.iceblink"
     },
     "web": {
       "bundler": "metro",

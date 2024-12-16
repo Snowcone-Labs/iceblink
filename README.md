@@ -1,6 +1,6 @@
 # Iceblink
 
-TOTP authentication app by Snowflake-Software.
+2FA authentication app by Snowcone Labs.
 
 > [!IMPORTANT]
 > The app is WIP, and not in a functioning state.

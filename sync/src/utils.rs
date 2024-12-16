@@ -20,7 +20,7 @@ pub fn hash_domain(domain: &str) -> String {
     base16ct::lower::encode_string(&Sha256::digest(domain))
 }
 
-pub const USER_AGENT: &str = concat!("Snowflake-Software/Iceblink/", env!("CARGO_PKG_VERSION"));
+pub const USER_AGENT: &str = concat!("Snowcone-Labs/Iceblink/", env!("CARGO_PKG_VERSION"));
 
 #[cfg(test)]
 mod tests {
