@@ -2,7 +2,6 @@ use axum::{
     body::Body,
     http::{Method, Request, StatusCode},
 };
-use common::AsExpected;
 use googletest::prelude::*;
 use iceblink_sync::models;
 use serde_json::json;
@@ -50,10 +49,7 @@ async fn delete_account(db: SqlitePool) {
 
     // User2 still works as usual
     let u2 = common::list_codes_content(&app, a2.as_str()).await;
-    assert_that!(u2.len(), eq(1));
-    for code in u2.iter() {
-        assert!(code.is_as_expected())
-    }
+    assert_that!(u2, common::matchers::code_fixture_default());
 
     // Check that the user is actually deleted from database.
     assert_that!(

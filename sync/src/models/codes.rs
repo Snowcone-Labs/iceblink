@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
 
-#[derive(Serialize, Deserialize, Clone, Debug, sqlx::FromRow, utoipa::ToSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, sqlx::FromRow, utoipa::ToSchema, PartialEq)]
 pub struct Code {
     pub id: String,
     pub owner_id: String,

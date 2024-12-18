@@ -19,5 +19,5 @@ options can be passed in the following ways:
 - Environment variables
 - .env
 
-The database manages itself, and you do not have to run migrations, nor create
+The database manages itself, and you do not have to run migrations nor create
 the file.

@@ -1,5 +1,7 @@
 // https://docs.rs/sqlx/latest/sqlx/attr.test.html
 
+pub mod matchers;
+
 use axum::{
     body::Body,
     http::{Method, Request},

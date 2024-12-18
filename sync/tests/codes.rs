@@ -18,16 +18,10 @@ async fn list_own_codes(db: SqlitePool) {
     let (a1, a2) = common::get_access_tokens(&db).await;
 
     let u1 = common::list_codes_content(&app, a1.as_str()).await;
-    assert_that!(u1.len(), eq(2));
-    for code in u1.iter() {
-        assert!(code.is_as_expected())
-    }
+    assert_that!(u1, common::matchers::code_fixture_default());
 
     let u2 = common::list_codes_content(&app, a2.as_str()).await;
-    assert_that!(u2.len(), eq(1));
-    for code in u2.iter() {
-        assert!(code.is_as_expected())
-    }
+    assert_that!(u2, common::matchers::code_fixture_default());
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
@@ -76,10 +70,7 @@ async fn add_code(db: SqlitePool) {
 
     // User 2 should not be affected by the operation
     let u2 = common::list_codes_content(&app, a2.as_str()).await;
-    assert_that!(u2.len(), eq(1));
-    for code in u2.iter() {
-        assert!(code.is_as_expected())
-    }
+    assert_that!(u2, common::matchers::code_fixture_default());
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
@@ -109,10 +100,7 @@ async fn add_code_no_content(db: SqlitePool) {
 
     // Check that it was not added to the list
     let listing_request = common::list_codes_content(&app, a1.as_str()).await;
-    assert_that!(listing_request.len(), eq(2));
-    for code in listing_request {
-        assert!(code.is_as_expected());
-    }
+    assert_that!(listing_request, common::matchers::code_fixture_default());
 }
 
 //
@@ -317,10 +305,7 @@ async fn edit_code_other_user(db: SqlitePool) {
 
     // Check that it did indeed not happen
     let u2 = common::list_codes_content(&app, a2.as_str()).await;
-    assert_that!(u2.len(), eq(1));
-    for code in u2.iter() {
-        assert!(code.is_as_expected())
-    }
+    assert_that!(u2, common::matchers::code_fixture_default());
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
@@ -358,10 +343,7 @@ async fn edit_code_other_user_no_auth(db: SqlitePool) {
 
     // Check that it did indeed not happen
     let u2 = common::list_codes_content(&app, a2.as_str()).await;
-    assert_that!(u2.len(), eq(1));
-    for code in u2.iter() {
-        assert!(code.is_as_expected())
-    }
+    assert_that!(u2, common::matchers::code_fixture_default());
 }
 
 //
@@ -379,9 +361,10 @@ async fn delete_code(db: SqlitePool) {
 
     let codes_listing = common::list_codes_content(&app, a1.as_str()).await;
     assert_that!(codes_listing.len(), eq(1));
-    let code = codes_listing.get(0).unwrap();
-    assert_that!(code.id, eq(common::USER1_CODE1_ID));
-    assert!(code.is_as_expected());
+
+    let remaining_code = codes_listing.get(0).unwrap();
+    assert_that!(remaining_code.id, eq(common::USER1_CODE1_ID));
+    assert!(remaining_code.is_as_expected());
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
@@ -402,10 +385,7 @@ async fn delete_code_not_found(db: SqlitePool) {
 
     // The user codes should not be affected
     let user_codes = common::list_codes_content(&app, a1.as_str()).await;
-    assert_that!(user_codes.len(), eq(2));
-    for code in user_codes.iter() {
-        assert!(code.is_as_expected())
-    }
+    assert_that!(user_codes, common::matchers::code_fixture_default());
 }
 
 #[sqlx::test(fixtures("users", "codes"))]
@@ -426,10 +406,7 @@ async fn delete_code_other_user(db: SqlitePool) {
 
     // The victim should not be affected
     let victim_codes = common::list_codes_content(&app, a2.as_str()).await;
-    assert_that!(victim_codes.len(), eq(1));
-    for code in victim_codes.iter() {
-        assert!(code.is_as_expected())
-    }
+    assert_that!(victim_codes, common::matchers::code_fixture_default());
 }
 
 //
