@@ -49,7 +49,7 @@ async fn delete_account(db: SqlitePool) {
 
     // User2 still works as usual
     let u2 = common::list_codes_content(&app, a2.as_str()).await;
-    assert_that!(u2, common::matchers::code_fixture_default());
+    assert_that!(u2, common::matchers::code_fixture());
 
     // Check that the user is actually deleted from database.
     assert_that!(
