@@ -23,7 +23,7 @@ metrics-exporter-prometheus = "0.16.0"
 rand = "0.8.5"
 reqwest = {version = "0.12.9", features = ["json", "rustls-tls"], default-features = false}
 serde = {version = "1.0.216", features = ["derive"]}
-serde_json = "1.0.133"
+serde_json = "1.0.134"
 serde_with = "3.11.0"
 sha2 = "0.10.8"
 sqlx = {version = "0.8", features = ["chrono", "derive", "macros", "migrate", "runtime-tokio", "sqlite"]}
@@ -32,9 +32,9 @@ tower = "0.5.2"
 tower-http = {version = "0.6.2", features = ["compression-full", "cors", "timeout", "trace"]}
 tracing = "0.1.41"
 tracing-subscriber = "0.3.19"
-utoipa = {version = "5.2.0", features = ["axum_extras"]}
-utoipa-axum = "0.1.2"
-utoipa-swagger-ui = {version = "8.0.3", features = ["axum", "vendored"]}
+utoipa = {version = "5.3.0", features = ["axum_extras"]}
+utoipa-axum = "0.1.3"
+utoipa-swagger-ui = {version = "8.1.0", features = ["axum", "vendored"]}
 
 [dev-dependencies]
 googletest = "0.13.0"
