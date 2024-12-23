@@ -80,8 +80,12 @@ impl Matcher<&Vec<models::codes::Code>> for CodeFixtureMatcher {
         matcher_result: googletest::matcher::MatcherResult,
     ) -> googletest::description::Description {
         match matcher_result {
-            MatcherResult::Match => "is an expected code entry".into(),
-            MatcherResult::NoMatch => "isn't an expected code entry".into(),
+            MatcherResult::Match => {
+                "is an expected code entry based on `users` + `code` SQLx fixture".into()
+            }
+            MatcherResult::NoMatch => {
+                "isn't an expected code entry based on `users` + `code` SQLx fixture".into()
+            }
         }
     }
 }
