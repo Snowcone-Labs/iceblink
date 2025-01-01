@@ -10,7 +10,7 @@ axum = {version = "0.7.9", features = ["macros"]}
 axum-extra = {version = "0.9.6", features = ["cookie"]}
 axum-macros = "0.4.2"
 base16ct = {version = "0.2.0", features = ["alloc"]}
-bon = "3.3.0"
+bon = "3.3.2"
 bytes = "1.9.0"
 chrono = "0.4.39"
 clap = {version = "4.5.23", features = ["derive", "env"]}
