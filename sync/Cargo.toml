@@ -7,7 +7,7 @@ version = "0.1.0"
 
 [dependencies]
 axum = {version = "0.7.9", features = ["macros"]}
-axum-extra = {version = "0.9.6", features = ["cookie"]}
+axum-extra = {version = "0.10.0", features = ["cookie"]}
 axum-macros = "0.4.2"
 base16ct = {version = "0.2.0", features = ["alloc"]}
 bon = "3.3.0"
