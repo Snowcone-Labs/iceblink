@@ -1,4 +1,10 @@
-export function IceblinkLogo({ size = 60 }: { size?: number }) {
+export function IceblinkLogo({
+  size = 60,
+  fancy = false,
+}: {
+  size?: number;
+  fancy?: boolean;
+}) {
   return (
     <svg
       width="1440"
@@ -9,7 +15,12 @@ export function IceblinkLogo({ size = 60 }: { size?: number }) {
       style={{
         width: size,
         height: size,
-        borderRadius: 8,
+        borderRadius: 12,
+        borderTop: fancy ? "1px solid rgba(255, 255, 255, 0.20)" : undefined,
+        boxShadow: fancy
+          ? "0px 0px 0px 1px rgba(0, 0, 0, 0.25), 0px 5px 50px 0px rgba(0, 0, 0, 0.25)"
+          : undefined,
+        margin: fancy ? 1 : 0,
       }}
     >
       <rect width="1440" height="1440" fill="#251E41" />

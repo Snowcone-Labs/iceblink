@@ -1,4 +1,4 @@
-import { IceblinkLogo } from "@/components/Logo";
+import { Feature } from "@/components/Feature";
 import { Button } from "@/components/ui/Button";
 import {
   makeRedirectUri,
@@ -7,7 +7,14 @@ import {
 } from "expo-auth-session";
 import { Link } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import { Settings } from "lucide-react-native";
+import {
+  ClockArrowUp,
+  FolderKey,
+  MonitorSmartphone,
+  Palette,
+  Settings,
+  Tag,
+} from "lucide-react-native";
 import { useEffect } from "react";
 import { Platform, Text, View } from "react-native";
 
@@ -37,11 +44,24 @@ export default function SigninPage() {
   );
 
   return (
-    <View className="bg-iceblink-bg-dark p-5 justify-center items-center flex-1">
-      <View className="my-auto flex justify-center items-center">
-        <Text className="color-iceblink-fg-dark text-5xl">Iceblink</Text>
-        <IceblinkLogo size={200} />
+    <>
+      <View className="flex flex-col justify-center items-center gap-6 flex-1 self-stretch">
+        <View className="flex flex-col items-center">
+          <Text className="text-white text-3xl font-bold">
+            Your all-in-one 2FA app
+          </Text>
+          <Text className="text-white text-2xl">Modern & bundled with:</Text>
+        </View>
+
+        <View className="bg-iceblink-bg-dim p-5 rounded-lg w-full">
+          <Feature icon={FolderKey}>Encrypted cloud sync</Feature>
+          <Feature icon={Palette}>Colors & icons for apps</Feature>
+          <Feature icon={Tag}>Folders & tagging</Feature>
+          <Feature icon={ClockArrowUp}>Ahead-of-time codes</Feature>
+          <Feature icon={MonitorSmartphone}>Multiple device support</Feature>
+        </View>
       </View>
+
       <View className="flex gap-3 w-full">
         <View className="flex flex-row gap-3">
           <Button
@@ -64,8 +84,8 @@ export default function SigninPage() {
         >
           Continue offline
         </Link>
+        {result && <Text>{JSON.stringify(result, null, 2)}</Text>}
       </View>
-      {result && <Text>{JSON.stringify(result, null, 2)}</Text>}
-    </View>
+    </>
   );
 }

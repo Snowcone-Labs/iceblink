@@ -9,7 +9,7 @@ module.exports = {
         "iceblink-bg-dark": "#271e41",
 
         "iceblink-fg-dim": "#c8cbea",
-        "iceblink-bg-dim": "#2f314b",
+        "iceblink-bg-dim": "#32294b",
 
         "iceblink-fg-light": "#1e202f",
         "iceblink-bg-light": "#f7f7fa",
