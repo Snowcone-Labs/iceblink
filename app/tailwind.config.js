@@ -5,6 +5,8 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        "iceblink-primary": "hsla(253, 67%, 63%, 1)",
+
         "iceblink-fg-dark": "#f7f7fa",
         "iceblink-bg-dark": "#271e41",
 

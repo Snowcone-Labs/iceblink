@@ -9,6 +9,8 @@ import { Link } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import {
   ClockArrowUp,
+  Cloud,
+  CloudOff,
   FolderKey,
   MonitorSmartphone,
   Palette,
@@ -53,7 +55,7 @@ export default function SigninPage() {
           <Text className="text-white text-2xl">Modern & bundled with:</Text>
         </View>
 
-        <View className="bg-iceblink-bg-dim p-5 rounded-lg w-full">
+        <View className="bg-iceblink-bg-dim p-5 rounded-lg w-full gap-4">
           <Feature icon={FolderKey}>Encrypted cloud sync</Feature>
           <Feature icon={Palette}>Colors & icons for apps</Feature>
           <Feature icon={Tag}>Folders & tagging</Feature>
@@ -62,28 +64,29 @@ export default function SigninPage() {
         </View>
       </View>
 
-      <View className="flex gap-3 w-full">
-        <View className="flex flex-row gap-3">
+      <View className="flex flex-col gap-5 w-full">
+        <View className="flex flex-row gap-5">
+          <Link href="/(auth)/server" asChild>
+            <Button color="secondary" icon={Settings} />
+          </Link>
+
           <Button
             color="primary"
             disabled={!request}
             onPress={() => promptAsync()}
             className="flex-grow"
+            icon={Cloud}
           >
-            Login
+            Login to sync
           </Button>
-          <Link href="/(auth)/server" asChild>
-            <Button color="secondary">
-              <Settings />
-            </Button>
-          </Link>
         </View>
-        <Link
-          className="color-iceblink-fg-info text-lg text-right"
-          href="/(auth)/unlock"
-        >
-          Continue offline
+
+        <Link href="/(auth)/unlock" asChild>
+          <Button color="secondary" icon={CloudOff}>
+            Start locally
+          </Button>
         </Link>
+
         {result && <Text>{JSON.stringify(result, null, 2)}</Text>}
       </View>
     </>

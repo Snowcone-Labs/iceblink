@@ -21,57 +21,18 @@ const colors = {
     fg: "#20fea1",
   },
   primary: {
-    bg: "#0c346b",
-    fg: "lightblue",
+    bg: "hsla(253, 67%, 63%, 1)",
+    fg: "white",
   },
   secondary: {
     bg: "#2f314b",
-    fg: "#c8cbea",
-  },
-};
-
-const shapes = {
-  normal: {
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    height: 56,
-    fontSize: 18,
-  },
-  normalNoPadding: {
-    paddingHorizontal: 2,
-    borderRadius: 10,
-    height: 56,
-    fontSize: 18,
-  },
-  square: {
-    height: 56,
-    width: 56,
-    borderRadius: 10,
-    fontSize: 18,
-  },
-  squareMedium: {
-    height: 40,
-    width: 40,
-    borderRadius: 10,
-    fontSize: 16,
-  },
-  squareSmall: {
-    height: 32,
-    width: 32,
-    borderRadius: 8,
-    fontSize: 16,
-  },
-  slim: {
-    height: 40,
-    borderRadius: 8,
-    paddingHorizontal: 20,
-    fontSize: 16,
+    fg: "white",
   },
 };
 
 interface Props {
   children?: React.ReactNode;
-  shape?: keyof typeof shapes;
+  icon?: React.ElementType;
   color?: keyof typeof colors;
   background?: string;
   foreground?: string;
@@ -87,7 +48,6 @@ interface Props {
 export function Button({
   children,
   color = "primary",
-  shape = "normal",
   background,
   foreground,
   shadow = false,
@@ -97,52 +57,58 @@ export function Button({
   textStyle,
   disabled = false,
   className,
+  icon,
 }: Props) {
-  const shapeStyle = shapes[shape];
   const buttonStyle: ViewStyle = {
     backgroundColor: background || colors[color].bg,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#fff2",
+    paddingTop: 12,
+    paddingBottom: 12,
+    paddingLeft: children ? 20 : 12,
+    paddingRight: children ? 20 : 12,
+    borderRadius: 10,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255, 255, 255, 0.20)",
+    boxShadow:
+      " 0px 0px 0px 1px rgba(0, 0, 0, 0.25), 0px 5px 10px 0px rgba(0, 0, 0, 0.15)",
     ...(shadow && {
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.2,
       shadowRadius: 2,
     }),
-    ...shapeStyle,
     ...style,
   };
 
   const textStyles: TextStyle = {
     color: foreground || colors[color].fg,
-    fontWeight: "bold",
+    fontWeight: 500,
     textAlign: "center",
-    fontSize: shapeStyle.fontSize,
+    fontSize: 20,
     ...textStyle,
   };
 
   return (
     <TouchableOpacity
       onPress={onPress}
-      style={[
-        styles.button,
-        buttonStyle,
-        disableRaiseOnFocus ? {} : styles.raiseOnFocus,
-      ]}
+      style={[buttonStyle, disableRaiseOnFocus ? {} : styles.raiseOnFocus]}
       className={className}
       activeOpacity={0.8}
       disabled={disabled}
     >
-      <Text style={textStyles}>{children}</Text>
+      {children && <Text style={textStyles}>{children}</Text>}
+      {icon &&
+        React.createElement(icon, { style: { color: textStyles.color } })}
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  button: {
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#fff2",
-  },
   raiseOnFocus: {
     boxShadow:
       "0px 0px 0px 1px rgba(0, 0, 0, 0.25), var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)",

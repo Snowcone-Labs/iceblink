@@ -36,6 +36,17 @@
           "backgroundColor": "#ffffff"
         }
       ]
+      // [
+      //   "expo-font",
+      //   {
+      //     "fonts": [
+      //       "node_modules/@expo-google-fonts/inter/Inter_400Regular.ttf",
+      //       "node_modules/@expo-google-fonts/inter/Inter_500Medium.ttf",
+      //       "node_modules/@expo-google-fonts/inter/Inter_600SemiBold.ttf",
+      //       "node_modules/@expo-google-fonts/inter/Inter_700Bold.ttf"
+      //     ]
+      //   }
+      // ]
     ],
     "experiments": {
       "typedRoutes": true

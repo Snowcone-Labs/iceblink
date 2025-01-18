@@ -5,15 +5,7 @@ export function IceblinkTextLogo({ ...props }) {
   return (
     <View className="flex flex-row items-center gap-2 p-5" {...props}>
       <IceblinkLogo />
-      <Text
-        style={{
-          fontFamily: "Inter",
-        }}
-        className="text-white font-bold text-2xl"
-      >
-        {" "}
-        Iceblink
-      </Text>
+      <Text className="text-white font-bold text-2xl"> Iceblink</Text>
     </View>
   );
 }

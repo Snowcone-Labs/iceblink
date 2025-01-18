@@ -10,7 +10,7 @@ export function Feature({
 }) {
   return (
     <View className="flex flex-row w-full justify-between">
-      <Text className="text-white text-xl">{children}</Text>
+      <Text className="text-white text-lg">{children}</Text>
       {React.createElement(icon)}
     </View>
   );
