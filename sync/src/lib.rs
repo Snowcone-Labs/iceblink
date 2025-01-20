@@ -144,8 +144,7 @@ pub fn configure_router(
         .routes(routes!(routes::v1::misc::metrics))
         .routes(routes!(routes::v1::users::oauth))
         .with_state(state)
-        .nest_service(
-            "/",
+        .fallback_service(
             MemoryServe::new(load_assets!("./src/static"))
                 .index_file(Some("/landing.html"))
                 .html_cache_control(memory_serve::CacheControl::Long)
