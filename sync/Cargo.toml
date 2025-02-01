@@ -17,7 +17,7 @@ clap = {version = "4.5.26", features = ["derive", "env"]}
 crc32fast = "1.4.2"
 dotenvy = {version = "0.15.7"}
 jsonwebtoken = "9.3.0"
-memory-serve = "0.6.0"
+memory-serve = "1.0.0"
 metrics = "0.24.1"
 metrics-exporter-prometheus = "0.16.1"
 rand = "0.8.5"
